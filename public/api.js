@@ -183,8 +183,7 @@ commentForm?.addEventListener(
 
     commentInput.value = "";
 
-    await loadComments(anime.id);
+   await loadComments(CURRENT_ANIME_ID);
   }
 );
-
-loadComments(anime.id);
+loadComments(CURRENT_ANIME_ID);
