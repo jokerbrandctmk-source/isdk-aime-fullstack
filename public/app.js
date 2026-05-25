@@ -3257,11 +3257,15 @@ function bindAuthModal() {
     try {
       const data = await api.post(`/api/auth/${state.authMode}`, payload);
       state.token = data.token;
-      state.user = data.user;
+      state.user = data.user || {};
       localStorage.setItem("isdk_aime_token", data.token);
       await loadUserState();
       closeModal();
-      toast(`Signed in as ${state.user.username}.`);
+     toast(
+  `Signed in as ${
+    state.user?.username || "Anime Fan"
+  }.`
+);
       updateAccountButton();
       await route();
     } catch (error) {
