@@ -1196,6 +1196,7 @@ async function loadAnime() {
 async function loadUserState() {
   if (!state.token) return;
 
+  
   try {
     const [me, watchlist, progress] = await Promise.all([
       api.get("/api/me"),
@@ -1210,7 +1211,9 @@ async function loadUserState() {
     state.user = null;
     state.watchlist = [];
     state.progress = {};
-    localStorage.removeItem("isdk_aime_token");
+   localStorage.removeItem(
+      "isdk_aime_token"
+    );
   }
 }
 

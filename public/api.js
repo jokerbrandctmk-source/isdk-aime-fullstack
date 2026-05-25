@@ -144,8 +144,9 @@ async function loadComments(animeId) {
 
   const comments =
     await fetchComments(animeId);
+if (!commentsContainer) return;
 
-  commentsContainer.innerHTML =
+commentsContainer.innerHTML =
     comments.map(comment => `
 
       <div class="comment-card">
