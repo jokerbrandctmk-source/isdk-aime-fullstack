@@ -158,6 +158,7 @@ async function loadComments(animeId) {
 
     `).join("");
 }
+const CURRENT_ANIME_ID = "global-anime";
 
 commentForm?.addEventListener(
   "submit",
@@ -174,11 +175,11 @@ commentForm?.addEventListener(
 
     if (!comment) return;
 
-    await addComment(
-      anime.id,
-      username,
-      comment
-    );
+   await addComment(
+  CURRENT_ANIME_ID,
+  username,
+  comment
+);
 
     commentInput.value = "";
 
