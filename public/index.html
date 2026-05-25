@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#050505" />
+    <title>ISKD Anime Streaming App</title>
+    <link rel="icon" type="image/png" href="/assets/anime/favicon..png" />
+    <link rel="stylesheet" href="/styles.css?v=20260523-top-gap-fix" />
+    <link rel="stylesheet" href="/stable.css?v=20260525-rust-quality-apk-1" />
+  </head>
+  <body>
+    <svg aria-hidden="true" class="svg-sprite">
+      <symbol id="icon-play" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" fill="currentColor"></path>
+      </symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24">
+        <path d="m21 21-4.35-4.35m1.35-5.15a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24">
+        <path d="M20 21a8 8 0 0 0-16 0m8-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+      <symbol id="icon-filter" viewBox="0 0 24 24">
+        <path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+      <symbol id="icon-star" viewBox="0 0 24 24">
+        <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+      </symbol>
+      <symbol id="icon-clock" viewBox="0 0 24 24">
+        <path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+      <symbol id="icon-home" viewBox="0 0 24 24">
+        <path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+      </symbol>
+      <symbol id="icon-bookmark" viewBox="0 0 24 24">
+        <path d="M6 3h12v18l-6-4-6 4V3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+      </symbol>
+      <symbol id="icon-grid" viewBox="0 0 24 24">
+        <path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" fill="none" stroke="currentColor" stroke-width="2"></path>
+      </symbol>
+      <symbol id="icon-sparkles" viewBox="0 0 24 24">
+        <path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3Zm6 10 1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14Z" fill="currentColor"></path>
+      </symbol>
+      <symbol id="icon-cast" viewBox="0 0 24 24">
+        <path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v9M3 17a4 4 0 0 1 4 4M3 13a8 8 0 0 1 8 8M3 21h.01M13 21h5a3 3 0 0 0 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24">
+        <path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </symbol>
+    </svg>
+
+    <header class="app-header">
+      <a class="brand" href="#home" aria-label="ISKD Anime home">
+        <img class="brand-logo" src="/assets/logo.svg" alt="ISKD Anime" />
+      </a>
+
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="#home">Home</a>
+        <a href="#browse">Browse</a>
+        <a href="#my-list">My List</a>
+        <a href="#add-anime">Add Anime</a>
+        <a href="#subscribe">Subscribe</a>
+        <a href="#login">Login</a>
+      </nav>
+
+      <label class="search-box" aria-label="Search anime">
+        <svg class="icon"><use href="#icon-search"></use></svg>
+        <input id="searchInput" type="search" placeholder="Search titles, genres, moods" autocomplete="off" />
+      </label>
+
+      <button class="icon-button" id="authButton" type="button" aria-label="Open account panel" title="Account">
+        <svg class="icon"><use href="#icon-user"></use></svg>
+      </button>
+      <div class="account-menu" id="accountMenu" hidden></div>
+    </header>
+
+    <main id="app" class="app-shell" tabindex="-1"></main>
+
+    <nav class="mobile-tabbar" aria-label="Mobile navigation">
+      <a href="#home" data-tab-route="home"><svg class="icon"><use href="#icon-home"></use></svg><span>Home</span></a>
+      <a href="#my-list" data-tab-route="my-list"><svg class="icon"><use href="#icon-bookmark"></use></svg><span>My Lists</span></a>
+      <a class="upload-tab" href="#add-anime" data-tab-route="add-anime"><span class="upload-plus">+</span><span>Upload</span></a>
+      <a href="#browse" data-tab-route="browse"><svg class="icon"><use href="#icon-grid"></use></svg><span>Browse</span></a>
+      <a href="#subscribe" data-tab-route="subscribe"><svg class="icon"><use href="#icon-star"></use></svg><span>Subscribe</span></a>
+      <a href="#account" data-tab-route="account"><svg class="icon"><use href="#icon-user"></use></svg><span id="mobileAccountLabel">Login</span></a>
+    </nav>
+
+    <div id="modalRoot"></div>
+
+    <template id="authTemplate">
+      <div class="modal-backdrop" data-close-modal>
+        <section class="auth-modal" aria-modal="true" role="dialog" aria-labelledby="authTitle">
+          <button class="icon-button modal-close" type="button" data-close-modal aria-label="Close">
+            <svg class="icon"><use href="#icon-x"></use></svg>
+          </button>
+          <h2 id="authTitle">Your ISKD Anime account</h2>
+          <p class="muted">Create a demo account to save watchlist, progress, and comments.</p>
+          <div class="segmented" role="tablist" aria-label="Auth mode">
+            <button class="segment active" type="button" data-auth-mode="login">Login</button>
+            <button class="segment" type="button" data-auth-mode="register">Register</button>
+          </div>
+          <form id="authForm" class="auth-form">
+            <label>
+              Username
+              <input name="username" required minlength="3" autocomplete="username" />
+            </label>
+            <label>
+              Password
+              <input name="password" required minlength="6" type="password" autocomplete="current-password" />
+            </label>
+            <button class="primary-button wide" type="submit">Continue</button>
+            <p id="authMessage" class="form-message" role="status"></p>
+          </form>
+        </section>
+      </div>
+    </template>
+
+    <script src="/config.js"></script>
+    <script type="module" src="/firebase.js"></script>
+<script type="module" src="/app.js?v=20260525-rust-quality-apk-1" defer></script>
+  </body>
+</html>

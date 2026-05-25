@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: iskd-anime-node-legacy
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: iskd-anime-storage
+      mountPath: /opt/render/project/src/storage
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_SECRET
+        generateValue: true
+      - key: DATA_DIR
+        value: /opt/render/project/src/storage/data
+      - key: UPLOAD_DIR
+        value: /opt/render/project/src/storage/uploads
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: iskd-anime

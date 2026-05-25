@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ISKD Anime</string>
+    <string name="title_activity_main">ISKD Anime</string>
+    <string name="package_name">com.isdk.anime</string>
+    <string name="custom_url_scheme">com.isdk.anime</string>
+</resources>

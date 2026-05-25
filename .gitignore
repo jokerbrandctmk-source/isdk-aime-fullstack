@@ -1,0 +1,12 @@
+node_modules/
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
+
+# Keep source code deployable. Upload large videos from the live app instead.
+public/assets/videos/*.mp4
+
+*.log
+.env
+storage-test/

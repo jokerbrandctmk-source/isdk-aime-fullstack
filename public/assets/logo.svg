@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="92" viewBox="0 0 360 92" role="img" aria-labelledby="title desc">
+  <title id="title">ISKD Anime logo</title>
+  <desc id="desc">A sharp anime-tech streaming logo with the text ISKD Anime.</desc>
+  <defs>
+    <linearGradient id="markGradient" x1="6" x2="78" y1="12" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff6b35"/>
+      <stop offset="0.52" stop-color="#f4b942"/>
+      <stop offset="1" stop-color="#1ed3c6"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="100" x2="348" y1="18" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.58" stop-color="#fff1d0"/>
+      <stop offset="1" stop-color="#9ff3eb"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M44 6 80 26v40L44 86 8 66V26L44 6Z" fill="#111318" stroke="url(#markGradient)" stroke-width="4"/>
+    <path d="M31 25v42h8V25h-8Zm17 0v42h8V43l13 24h9L63 39l13-14h-10L56 36V25h-8Z" fill="url(#markGradient)"/>
+    <path d="M19 70 69 20" stroke="#ffffff" stroke-opacity="0.34" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="104" y="47" fill="url(#textGradient)" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="33" font-weight="900" letter-spacing="0">ISKD</text>
+  <text x="104" y="74" fill="#f4b942" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="27" font-weight="850" letter-spacing="0">Anime</text>
+  <path d="M245 62h88" stroke="#1ed3c6" stroke-width="6" stroke-linecap="round"/>
+  <path d="M245 75h52" stroke="#ff6b35" stroke-width="5" stroke-linecap="round"/>
+</svg>

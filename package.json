@@ -1,0 +1,28 @@
+{
+  "name": "isdk-aime-anime-fullstack",
+  "version": "1.0.0",
+  "description": "ISKD Anime, a self-contained full-stack anime streaming style app with Node APIs and a responsive frontend.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "anime",
+    "streaming",
+    "full-stack",
+    "node"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/cli": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
+    "firebase": "^12.13.0",
+    "formidable": "^3.5.4"
+  }
+}

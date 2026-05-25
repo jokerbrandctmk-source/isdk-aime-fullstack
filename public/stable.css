@@ -1,0 +1,1780 @@
+/* ISKD stable responsive layer. Loaded after the old stylesheet to remove layout drift. */
+
+:root {
+  --stable-bg: #050505;
+  --stable-panel: rgba(18, 18, 22, 0.92);
+  --stable-panel-soft: rgba(255, 255, 255, 0.07);
+  --stable-line: rgba(255, 255, 255, 0.12);
+  --stable-text: #fffaf0;
+  --stable-muted: #b8b1a7;
+  --stable-orange: #ff6518;
+  --stable-amber: #ffc13b;
+  --stable-cyan: #16d8cb;
+  --header-h: 76px;
+  --tabbar-h: 78px;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+  background: #000 !important;
+  color: var(--stable-text);
+  letter-spacing: 0 !important;
+}
+
+.svg-sprite,
+.icon-sprite {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+.app-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 80 !important;
+  display: grid !important;
+  grid-template-columns: auto auto minmax(240px, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(0.7rem, 1.8vw, 1.35rem) !important;
+  min-height: var(--header-h) !important;
+  padding: 0.72rem clamp(1rem, 3.5vw, 3.25rem) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(5, 5, 6, 0.84) !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.26) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+}
+
+.brand-logo {
+  width: clamp(8.2rem, 11vw, 12rem) !important;
+  max-width: none !important;
+  height: auto !important;
+}
+
+.top-nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.2rem !important;
+  white-space: nowrap !important;
+}
+
+.top-nav a {
+  padding: 0.56rem 0.68rem !important;
+  border-radius: 999px !important;
+  color: rgba(255, 250, 240, 0.72) !important;
+  font-size: clamp(0.82rem, 1vw, 0.96rem) !important;
+  font-weight: 900 !important;
+}
+
+.top-nav a:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.search-box {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 3.1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.7rem !important;
+  padding: 0 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.search-box input {
+  width: 100% !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  color: #fff !important;
+  background: transparent !important;
+}
+
+#authButton {
+  width: 3.1rem !important;
+  height: 3.1rem !important;
+  border-radius: 12px !important;
+}
+
+.app-shell {
+  min-height: calc(100dvh - var(--header-h)) !important;
+  background: #000 !important;
+}
+
+.hero {
+  width: 100% !important;
+  min-height: calc(100dvh - var(--header-h)) !important;
+  display: grid !important;
+  align-items: end !important;
+  overflow: hidden !important;
+  background-color: #050505 !important;
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.48) 44%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.18) 46%, rgba(0, 0, 0, 0.12) 100%),
+    var(--hero-image) !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+.hero::before {
+  opacity: 0 !important;
+}
+
+.hero::after {
+  background:
+    radial-gradient(circle at 72% 40%, rgba(22, 216, 203, 0.16), transparent 22rem),
+    linear-gradient(0deg, #000 0%, transparent 38%) !important;
+}
+
+.hero-inner {
+  width: min(1260px, calc(100% - 2rem)) !important;
+  min-height: calc(100dvh - var(--header-h)) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 360px) !important;
+  align-items: end !important;
+  gap: clamp(1.2rem, 4vw, 4rem) !important;
+  margin: 0 auto !important;
+  padding: clamp(2rem, 6vw, 5rem) 0 clamp(2rem, 5vw, 4rem) !important;
+}
+
+.hero-copy {
+  max-width: 760px !important;
+}
+
+.eyebrow {
+  margin-bottom: 0.75rem !important;
+  color: var(--stable-amber) !important;
+  font-size: clamp(0.74rem, 1vw, 0.88rem) !important;
+  line-height: 1.35 !important;
+}
+
+.hero h1 {
+  max-width: 11ch !important;
+  margin: 0 !important;
+  font-size: clamp(3.2rem, 7vw, 7.2rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: 0 !important;
+}
+
+.hero-tagline {
+  max-width: 38rem !important;
+  margin-top: 1rem !important;
+  font-size: clamp(1.08rem, 2vw, 1.55rem) !important;
+  line-height: 1.18 !important;
+}
+
+.hero-synopsis {
+  max-width: 42rem !important;
+  color: rgba(255, 250, 240, 0.76) !important;
+}
+
+.hero-preview {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 16 / 10 !important;
+  min-height: 220px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px !important;
+  background: #070707 !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46) !important;
+}
+
+.hero-preview img,
+.hero-preview video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+.preview-label {
+  position: absolute !important;
+  left: 1rem !important;
+  bottom: 1rem !important;
+  z-index: 2 !important;
+}
+
+.hero-dots {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  margin-top: 1rem !important;
+}
+
+.hero-dot {
+  width: clamp(1.6rem, 3vw, 2.6rem) !important;
+  height: 0.26rem !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+.content-band,
+.mobile-page,
+.browse-page,
+.mobile-list-page,
+.account-page,
+.add-anime-page,
+.detail-layout,
+.subscribe-studio {
+  width: min(1240px, calc(100% - 2rem)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.content-band {
+  padding: clamp(1.4rem, 3vw, 2.8rem) 0 clamp(2.5rem, 5vw, 4rem) !important;
+}
+
+.section-heading {
+  margin: 1.4rem 0 1rem !important;
+}
+
+.rail {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: clamp(150px, 18vw, 230px) !important;
+  gap: 1rem !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 0.25rem 0 0.75rem !important;
+  scroll-snap-type: x proximity !important;
+  scrollbar-width: thin !important;
+}
+
+.grid,
+.mobile-poster-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+.anime-card {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 0.7rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.poster-button,
+.anime-card > img {
+  display: block !important;
+  width: 100% !important;
+  aspect-ratio: 2 / 3 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px !important;
+  background: #111 !important;
+}
+
+.poster-button img,
+.anime-card > img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+.anime-card h3 {
+  min-height: 2.4em !important;
+  margin: 0 !important;
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.2 !important;
+}
+
+.anime-card p,
+.anime-card small {
+  margin: 0 !important;
+  color: rgba(255, 250, 240, 0.68) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.3 !important;
+}
+
+.genre-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.35rem !important;
+}
+
+.genre-tags span {
+  padding: 0.28rem 0.48rem !important;
+  border-radius: 999px !important;
+  color: #dff !important;
+  background: rgba(22, 216, 203, 0.14) !important;
+  font-size: 0.7rem !important;
+  font-weight: 900 !important;
+}
+
+.progress-line {
+  width: 100% !important;
+  height: 0.22rem !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.progress-line span {
+  display: block !important;
+  width: var(--progress, 0%) !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, var(--stable-orange), var(--stable-cyan)) !important;
+}
+
+.primary-button,
+.ghost-button,
+.danger-button,
+.text-switch {
+  min-height: 2.75rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  border-radius: 999px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.primary-button {
+  border: 0 !important;
+  color: #090909 !important;
+  background: linear-gradient(135deg, #ff5b1a, #ffc63a) !important;
+}
+
+.ghost-button {
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.filter-panel,
+.ai-finder,
+.creator-form,
+.comment-panel,
+.sidebar-panel,
+.player-controls,
+.settings-list,
+.premium-card {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+input,
+select,
+textarea {
+  max-width: 100% !important;
+}
+
+.mobile-tabbar {
+  display: none !important;
+}
+
+.watch-layout {
+  width: min(1240px, calc(100% - 2rem)) !important;
+  min-height: calc(100dvh - var(--header-h)) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px) !important;
+  gap: 1rem !important;
+  margin: 0 auto !important;
+  padding: 1rem 0 2rem !important;
+}
+
+.player-panel {
+  min-width: 0 !important;
+}
+
+.player {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 16 / 9 !important;
+  height: auto !important;
+  max-height: min(68dvh, 720px) !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+  background: #000 !important;
+}
+
+.player video,
+.player img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+.player.video-load-error::after {
+  content: "Video stream load nahi hui. Upload/Bunny URL check karo." !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 24 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 1.25rem !important;
+  color: #fff !important;
+  text-align: center !important;
+  font-weight: 900 !important;
+  background: rgba(0, 0, 0, 0.72) !important;
+}
+
+.watch-back-button {
+  position: absolute !important;
+  z-index: 40 !important;
+  top: 1rem !important;
+  left: 1rem !important;
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 999px !important;
+  color: #fff !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.video-center-play {
+  position: absolute !important;
+  z-index: 25 !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: clamp(4rem, 9vw, 5.75rem) !important;
+  height: clamp(4rem, 9vw, 5.75rem) !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #090909 !important;
+  background: rgba(255, 193, 59, 0.94) !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.video-center-play.is-playing {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.custom-controls {
+  position: absolute !important;
+  left: 0.75rem !important;
+  right: 0.75rem !important;
+  bottom: 0.75rem !important;
+  z-index: 26 !important;
+  display: grid !important;
+  gap: 0.55rem !important;
+  padding: 0.7rem !important;
+  border-radius: 14px !important;
+  background: rgba(0, 0, 0, 0.58) !important;
+  backdrop-filter: blur(14px) !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.player.controls-hidden .custom-controls,
+.player.controls-hidden .player-quick-controls {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.control-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.control-row::-webkit-scrollbar {
+  display: none !important;
+}
+
+.control-row button,
+.player-quick-controls button {
+  min-width: 2.35rem !important;
+  height: 2.35rem !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  font-size: 0.75rem !important;
+  font-weight: 900 !important;
+}
+
+.video-progress,
+.range {
+  width: 100% !important;
+  accent-color: var(--stable-orange) !important;
+}
+
+.player-quick-controls {
+  display: none !important;
+}
+
+.watch-copy,
+.comment-panel,
+.sidebar-panel,
+.player-controls {
+  margin-top: 0.85rem !important;
+  padding: 1rem !important;
+}
+
+.compact-episodes {
+  display: grid !important;
+  gap: 0.55rem !important;
+}
+
+.compact-episode {
+  display: grid !important;
+  gap: 0.2rem !important;
+  padding: 0.8rem !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.app-splash {
+  min-height: 100dvh !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #000 !important;
+}
+
+.splash-center {
+  display: grid !important;
+  justify-items: center !important;
+  gap: 1rem !important;
+}
+
+.splash-center img {
+  width: min(15rem, 62vw) !important;
+}
+
+.splash-loader {
+  width: 3.2rem !important;
+  height: 3.2rem !important;
+  border: 4px solid rgba(255, 255, 255, 0.16) !important;
+  border-top-color: var(--stable-orange) !important;
+  border-radius: 999px !important;
+  animation: stableSpin 0.8s linear infinite !important;
+}
+
+@keyframes stableSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body.auth-mode .app-header,
+body.auth-mode .mobile-tabbar {
+  display: none !important;
+}
+
+.auth-page {
+  position: relative !important;
+  min-height: 100dvh !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 440px) !important;
+  align-items: center !important;
+  gap: clamp(2rem, 5vw, 5rem) !important;
+  padding: clamp(5.5rem, 9vh, 7rem) clamp(1.2rem, 6vw, 6rem) 2rem !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+.auth-slideshow {
+  position: fixed !important;
+  inset: 0 !important;
+  opacity: 0.46 !important;
+}
+
+.auth-slideshow span {
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+.auth-page::after {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(22, 216, 203, 0.14), transparent 28rem),
+    radial-gradient(circle at 78% 18%, rgba(255, 101, 24, 0.16), transparent 24rem),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.88)) !important;
+  pointer-events: none !important;
+}
+
+.auth-page .screen-header {
+  position: fixed !important;
+  top: 1rem !important;
+  left: 50% !important;
+  z-index: 3 !important;
+  width: min(1180px, calc(100% - 2rem)) !important;
+  display: grid !important;
+  grid-template-columns: 3rem 1fr 3rem !important;
+  align-items: center !important;
+  padding: 0 !important;
+  transform: translateX(-50%) !important;
+}
+
+.auth-logo {
+  justify-self: center !important;
+  width: min(14rem, 32vw) !important;
+}
+
+.auth-cinema-panel,
+.auth-card {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.auth-card {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: clamp(1.25rem, 3vw, 2rem) !important;
+  border-radius: 18px !important;
+  background: rgba(10, 10, 12, 0.82) !important;
+}
+
+.auth-poster-wall {
+  height: clamp(13rem, 28vw, 19rem) !important;
+}
+
+@media (max-width: 920px) {
+  .app-header {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+  }
+
+  .top-nav {
+    display: none !important;
+  }
+
+  .hero-inner {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-preview {
+    display: none !important;
+  }
+
+  .watch-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --header-h: 58px;
+    --tabbar-h: 74px;
+  }
+
+  body {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)) !important;
+  }
+
+  .app-header {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 0.55rem !important;
+    min-height: var(--header-h) !important;
+    padding: max(0.42rem, env(safe-area-inset-top)) 0.7rem 0.42rem !important;
+  }
+
+  .brand-logo {
+    width: 5.9rem !important;
+  }
+
+  .search-box {
+    height: 2.45rem !important;
+    padding: 0 0.7rem !important;
+    border-radius: 999px !important;
+  }
+
+  .search-box input {
+    font-size: 0.76rem !important;
+  }
+
+  #authButton {
+    display: none !important;
+  }
+
+  .mobile-tabbar {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 95 !important;
+    min-height: calc(var(--tabbar-h) + env(safe-area-inset-bottom)) !important;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    padding: 0.45rem 0.1rem calc(0.45rem + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: rgba(22, 23, 29, 0.98) !important;
+  }
+
+  .mobile-tabbar a {
+    min-width: 0 !important;
+    height: 3.6rem !important;
+    display: grid !important;
+    place-items: center !important;
+    align-content: center !important;
+    gap: 0.18rem !important;
+    color: #fff !important;
+    font-size: 0.58rem !important;
+    font-weight: 900 !important;
+  }
+
+  .mobile-tabbar .icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  .mobile-tabbar a.active {
+    color: var(--stable-orange) !important;
+  }
+
+  .upload-plus {
+    width: 2.9rem !important;
+    height: 2.9rem !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    color: #000 !important;
+    background: linear-gradient(135deg, #ff5b1a, #ffc13b) !important;
+    font-size: 1.7rem !important;
+    line-height: 1 !important;
+  }
+
+  .hero {
+    min-height: calc(100dvh - var(--header-h)) !important;
+    background-position: center center !important;
+  }
+
+  .hero-inner {
+    width: 100% !important;
+    min-height: calc(100dvh - var(--header-h)) !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    padding: 34dvh 1rem calc(var(--tabbar-h) + 1.1rem) !important;
+  }
+
+  .hero-copy {
+    width: 100% !important;
+    max-width: 26rem !important;
+  }
+
+  .hero h1 {
+    max-width: 9.8ch !important;
+    font-size: clamp(2.35rem, 12vw, 4.15rem) !important;
+    line-height: 0.95 !important;
+  }
+
+  .hero-tagline {
+    font-size: 1.03rem !important;
+    line-height: 1.22 !important;
+  }
+
+  .hero-synopsis,
+  .hero .meta-row {
+    display: none !important;
+  }
+
+  .action-row {
+    gap: 0.45rem !important;
+  }
+
+  .action-row .primary-button,
+  .action-row .ghost-button {
+    min-height: 2.5rem !important;
+    padding: 0 0.8rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .content-band,
+  .mobile-page,
+  .browse-page,
+  .mobile-list-page,
+  .account-page,
+  .add-anime-page {
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-bottom: calc(var(--tabbar-h) + 1rem) !important;
+  }
+
+  .rail {
+    grid-auto-columns: minmax(128px, 42vw) !important;
+    gap: 0.75rem !important;
+  }
+
+  .grid,
+  .mobile-poster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.82rem !important;
+  }
+
+  .anime-card h3 {
+    font-size: 0.84rem !important;
+  }
+
+  .anime-card p,
+  .anime-card small,
+  .genre-tags span {
+    font-size: 0.68rem !important;
+  }
+
+  .mobile-page-head {
+    padding-top: 0.5rem !important;
+  }
+
+  .mobile-page-head h1 {
+    font-size: 1.55rem !important;
+  }
+
+  .mobile-tabs {
+    gap: 1rem !important;
+    overflow-x: auto !important;
+  }
+
+  body.watch-mode {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)) !important;
+  }
+
+  body.watch-mode .app-header {
+    display: none !important;
+  }
+
+  body.watch-mode .mobile-tabbar {
+    display: grid !important;
+  }
+
+  .watch-layout {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    padding: 0 0 calc(var(--tabbar-h) + 1rem) !important;
+    display: block !important;
+  }
+
+  .player {
+    border-radius: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+    max-height: 54dvh !important;
+  }
+
+  .watch-back-button {
+    top: max(0.65rem, env(safe-area-inset-top)) !important;
+    left: 0.65rem !important;
+  }
+
+  .custom-controls {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: 0.5rem !important;
+    padding: 0.55rem !important;
+  }
+
+  .control-row button {
+    min-width: 2rem !important;
+    height: 2rem !important;
+    font-size: 0.64rem !important;
+  }
+
+  .video-time {
+    min-width: max-content !important;
+    font-size: 0.68rem !important;
+  }
+
+  .player-controls,
+  .watch-copy,
+  .comment-panel,
+  .sidebar-panel {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 1rem !important;
+  }
+
+  .sidebar-panel {
+    display: block !important;
+  }
+
+  .auth-page {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-content: center !important;
+    gap: 1rem !important;
+    padding: max(4.4rem, calc(env(safe-area-inset-top) + 4rem)) 1rem 1.2rem !important;
+  }
+
+  .auth-page .screen-header {
+    top: max(0.6rem, env(safe-area-inset-top)) !important;
+    width: 100% !important;
+    padding: 0 0.9rem !important;
+  }
+
+  .auth-logo {
+    width: 8rem !important;
+  }
+
+  .auth-cinema-panel {
+    display: block !important;
+  }
+
+  .auth-poster-wall {
+    height: 10rem !important;
+  }
+
+  .auth-brand-copy h2 {
+    font-size: 1.25rem !important;
+  }
+
+  .auth-brand-copy div {
+    display: none !important;
+  }
+
+  .auth-card {
+    padding: 1.15rem !important;
+  }
+}
+
+@media (max-width: 700px) and (orientation: landscape) {
+  :root {
+    --header-h: 50px;
+    --tabbar-h: 60px;
+  }
+
+  .hero-inner {
+    padding-top: 12dvh !important;
+    padding-bottom: calc(var(--tabbar-h) + 0.8rem) !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 8vw, 3.2rem) !important;
+  }
+
+  .player {
+    width: 100vw !important;
+    height: calc(100dvh - var(--tabbar-h)) !important;
+    aspect-ratio: auto !important;
+    max-height: none !important;
+  }
+
+  .watch-copy,
+  .comment-panel,
+  .sidebar-panel,
+  .player-controls {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+}
+
+/* ISKD Anime OTT pass 2: black/orange mobile-first streaming polish. */
+:root {
+  --iskd-orange: #ff5b14;
+  --iskd-gold: #ffbf24;
+  --iskd-black: #000;
+  --iskd-card: #15161b;
+  --iskd-nav: #23242b;
+}
+
+body {
+  background: #000 !important;
+}
+
+.app-header {
+  min-height: 68px !important;
+  background: rgba(0, 0, 0, 0.96) !important;
+  box-shadow: none !important;
+}
+
+.top-nav a,
+.mobile-tabs a,
+.mobile-tabbar a {
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease, transform 150ms ease !important;
+}
+
+.top-nav a:hover,
+.mobile-tabbar a:active {
+  transform: translateY(-1px) !important;
+}
+
+.hero {
+  min-height: calc(100dvh - 68px) !important;
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.64) 42%, rgba(0, 0, 0, 0.2) 100%),
+    linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.08) 54%),
+    var(--hero-image) !important;
+}
+
+.hero-inner {
+  min-height: calc(100dvh - 68px) !important;
+}
+
+.hero h1,
+.mobile-page-head h1,
+.screen-header h1,
+.auth-card h1,
+.premium-page h1 {
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+}
+
+.primary-button,
+.mobile-empty .primary-button,
+.premium-page .primary-button {
+  background: var(--iskd-orange) !important;
+  color: #080808 !important;
+  box-shadow: none !important;
+}
+
+.primary-button:hover {
+  filter: brightness(1.06) !important;
+}
+
+.ghost-button,
+.text-switch {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.filter-panel,
+.ai-finder,
+.creator-form,
+.comment-panel,
+.sidebar-panel,
+.player-controls,
+.settings-list,
+.premium-card {
+  border-radius: 0 !important;
+  background: #0d0d10 !important;
+  backdrop-filter: none !important;
+}
+
+.mobile-page,
+.premium-page,
+.profile-page,
+.auth-page {
+  background: #000 !important;
+}
+
+.mobile-page-head,
+.screen-header {
+  min-height: 4.25rem !important;
+}
+
+.mobile-head-actions a,
+.mobile-head-actions button,
+.screen-close,
+.back-arrow {
+  color: #fff !important;
+}
+
+.mobile-tabs {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.mobile-tabs a.active {
+  color: #fff !important;
+  border-color: var(--iskd-orange) !important;
+}
+
+.browse-sort-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin: 1.2rem 0 1rem !important;
+  color: #fff !important;
+  font-size: 1.35rem !important;
+  font-weight: 900 !important;
+}
+
+.anime-db-panel {
+  display: grid !important;
+  gap: 1rem !important;
+}
+
+.anime-db-copy {
+  display: grid !important;
+  gap: 0.35rem !important;
+  max-width: 780px !important;
+}
+
+.anime-db-copy h2 {
+  margin: 0 !important;
+  font-size: clamp(1.6rem, 4vw, 2.6rem) !important;
+  line-height: 1.05 !important;
+}
+
+.anime-db-search {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 0.75rem !important;
+  padding: 0.75rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #0d0d10 !important;
+}
+
+.anime-db-search input {
+  min-height: 3rem !important;
+  padding: 0 1rem !important;
+  border: 0 !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.anime-db-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+.anime-db-card {
+  display: grid !important;
+  grid-template-columns: 110px minmax(0, 1fr) !important;
+  gap: 0.9rem !important;
+  padding: 0.75rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #101014 !important;
+}
+
+.anime-db-card img {
+  width: 100% !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+  background: #111 !important;
+}
+
+.anime-db-card h3 {
+  margin: 0 0 0.35rem !important;
+  font-size: 1.05rem !important;
+  line-height: 1.15 !important;
+}
+
+.anime-db-card p {
+  margin: 0.4rem 0 !important;
+  color: rgba(255, 250, 240, 0.68) !important;
+  font-size: 0.78rem !important;
+  line-height: 1.35 !important;
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.poster-button,
+.anime-card > img {
+  border-radius: 0 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.anime-card .ghost-button {
+  min-height: 2.2rem !important;
+  padding: 0 0.8rem !important;
+  font-size: 0.78rem !important;
+}
+
+.account-avatar {
+  background: var(--iskd-gold) !important;
+  color: #111 !important;
+}
+
+.settings-list {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.settings-list a,
+.settings-list button {
+  min-height: 4rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #fff !important;
+  background: transparent !important;
+}
+
+.settings-list p {
+  margin: 1.8rem 0 0.55rem !important;
+  color: rgba(255, 255, 255, 0.46) !important;
+  font-size: 1rem !important;
+}
+
+.profile-hero,
+.profile-edit-hero {
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 91, 20, 0.5), rgba(0, 0, 0, 0.95)) !important;
+}
+
+.premium-page {
+  width: min(560px, 100%) !important;
+  margin: 0 auto !important;
+  min-height: 100dvh !important;
+  padding: 3.5rem 1.3rem 2rem !important;
+}
+
+.premium-card {
+  border: 2px solid var(--iskd-gold) !important;
+  padding: clamp(1rem, 4vw, 1.6rem) !important;
+  text-align: center !important;
+}
+
+.premium-card h2 {
+  color: var(--iskd-gold) !important;
+  text-transform: uppercase !important;
+}
+
+.premium-card strong {
+  display: block !important;
+  margin: 0.7rem 0 !important;
+  font-size: clamp(1.6rem, 6vw, 2.4rem) !important;
+}
+
+.auth-card input,
+.auth-card select,
+.creator-form input,
+.creator-form select,
+.creator-form textarea,
+.comment-form textarea {
+  border: 0 !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 0 !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.auth-card input:focus,
+.creator-form input:focus,
+.creator-form textarea:focus,
+.comment-form textarea:focus {
+  border-bottom-color: var(--iskd-orange) !important;
+  outline: 0 !important;
+}
+
+.auth-card .primary-button,
+.auth-card .text-switch {
+  width: 100% !important;
+  min-height: 3.25rem !important;
+}
+
+.auth-card .text-switch {
+  color: var(--iskd-orange) !important;
+  background: transparent !important;
+}
+
+.auth-brand-copy p {
+  color: var(--iskd-orange) !important;
+}
+
+.auth-brand-copy span {
+  border: 1px solid rgba(255, 91, 20, 0.4) !important;
+  background: rgba(255, 91, 20, 0.12) !important;
+}
+
+.player {
+  background: #000 !important;
+}
+
+.custom-controls {
+  border-radius: 0 !important;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.28)) !important;
+}
+
+.video-center-play {
+  background: var(--iskd-orange) !important;
+}
+
+@media (min-width: 701px) {
+  .content-band {
+    padding-top: 2.2rem !important;
+  }
+
+  .auth-page {
+    grid-template-columns: minmax(360px, 620px) minmax(340px, 440px) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --header-h: 58px;
+    --tabbar-h: 72px;
+  }
+
+  .app-header {
+    position: sticky !important;
+    min-height: var(--header-h) !important;
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  .brand-logo {
+    width: 6.5rem !important;
+  }
+
+  .search-box {
+    max-width: none !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    justify-content: flex-end !important;
+    padding-right: 0 !important;
+  }
+
+  .search-box input {
+    width: 0 !important;
+    max-width: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .search-box .icon {
+    width: 1.45rem !important;
+    height: 1.45rem !important;
+  }
+
+  .hero {
+    min-height: calc(100dvh - var(--header-h)) !important;
+    background-image:
+      linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.2) 58%, rgba(0, 0, 0, 0.08) 100%),
+      var(--hero-image) !important;
+  }
+
+  .hero-inner {
+    min-height: calc(100dvh - var(--header-h)) !important;
+    padding-top: 42dvh !important;
+    padding-bottom: calc(var(--tabbar-h) + 1rem) !important;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 13vw, 4rem) !important;
+  }
+
+  .mobile-tabbar {
+    background: var(--iskd-nav) !important;
+  }
+
+  .mobile-tabbar a {
+    color: #fff !important;
+  }
+
+  .mobile-tabbar a.active,
+  .mobile-tabbar a:hover {
+    color: var(--iskd-orange) !important;
+  }
+
+  .mobile-page,
+  .browse-page,
+  .mobile-list-page,
+  .account-page {
+    padding-top: 1rem !important;
+  }
+
+  .mobile-page-head {
+    min-height: 3.4rem !important;
+  }
+
+  .mobile-page-head h1 {
+    font-size: 1.7rem !important;
+  }
+
+  .grid,
+  .mobile-poster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .anime-db-search {
+    grid-template-columns: 1fr !important;
+  }
+
+  .anime-db-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .anime-db-card {
+    grid-template-columns: 88px minmax(0, 1fr) !important;
+  }
+
+  .poster-button,
+  .anime-card > img {
+    aspect-ratio: 0.72 / 1 !important;
+  }
+
+  .auth-page {
+    min-height: 100dvh !important;
+    padding-top: max(4.4rem, calc(env(safe-area-inset-top) + 4rem)) !important;
+  }
+
+  .auth-cinema-panel {
+    margin-top: auto !important;
+  }
+
+  .auth-poster-wall {
+    height: 12.5rem !important;
+    opacity: 0.95 !important;
+  }
+
+  .auth-card {
+    border: 0 !important;
+    background: rgba(0, 0, 0, 0.78) !important;
+  }
+
+  .watch-layout {
+    background: #000 !important;
+  }
+
+  .player-controls {
+    border: 0 !important;
+    background: #000 !important;
+  }
+
+  .watch-copy,
+  .comment-panel,
+  .sidebar-panel {
+    border: 0 !important;
+    background: #000 !important;
+  }
+}
+
+/* Final mobile search/header repair. Keep this last so older mobile overrides cannot hide search. */
+@media (max-width: 700px) {
+  .app-header {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    gap: 0.45rem !important;
+    min-height: 58px !important;
+    padding: max(0.42rem, env(safe-area-inset-top)) 0.65rem 0.42rem !important;
+  }
+
+  .brand-logo {
+    width: 5.35rem !important;
+  }
+
+  .search-box {
+    height: 2.35rem !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 0 0.6rem !important;
+    justify-content: flex-start !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .search-box input {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    font-size: 0.68rem !important;
+  }
+
+  .search-box .icon {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  #authButton {
+    display: grid !important;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    border-radius: 999px !important;
+    color: #111 !important;
+    background: var(--iskd-gold) !important;
+  }
+
+  #authButton .icon {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  .mobile-tabs {
+    width: 100% !important;
+    gap: 1rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding-left: 0 !important;
+    padding-right: 1rem !important;
+    scroll-padding-left: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .mobile-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .mobile-tabs a {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .mobile-page-head .mobile-head-actions a[aria-label="Search"] {
+    display: none !important;
+  }
+}
+
+/* Production polish: animated auth backdrop + phone-safe studio/subscribe page. */
+.auth-page.mobile-auth-screen {
+  isolation: isolate !important;
+  background: #000 !important;
+}
+
+.auth-slideshow {
+  opacity: 0.68 !important;
+  transform: translateZ(0) !important;
+}
+
+.auth-slideshow span {
+  filter: saturate(1.18) contrast(1.08) brightness(0.58) !important;
+  animation-name: iskdAuthPosterDrift !important;
+  animation-duration: 24s !important;
+  animation-timing-function: ease-in-out !important;
+  animation-iteration-count: infinite !important;
+}
+
+.auth-slideshow span:nth-child(2) {
+  animation-delay: 5s !important;
+}
+
+.auth-slideshow span:nth-child(3) {
+  animation-delay: 10s !important;
+}
+
+.auth-slideshow span:nth-child(4) {
+  animation-delay: 15s !important;
+}
+
+.auth-slideshow span:nth-child(5) {
+  animation-delay: 20s !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 91, 20, 0.18), transparent 34%),
+    radial-gradient(circle at 88% 12%, rgba(0, 229, 255, 0.13), transparent 30%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.48), rgba(0, 0, 0, 0.86) 58%, #000 100%) !important;
+}
+
+@keyframes iskdAuthPosterDrift {
+  0% {
+    opacity: 0;
+    transform: scale(1.05) translate3d(-2%, 1%, 0);
+  }
+  8%,
+  28% {
+    opacity: 1;
+  }
+  44% {
+    opacity: 0;
+    transform: scale(1.14) translate3d(2%, -1%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14) translate3d(2%, -1%, 0);
+  }
+}
+
+@media (max-width: 700px) {
+  .auth-page {
+    padding: max(4.25rem, calc(env(safe-area-inset-top) + 3.8rem)) 1rem 1.25rem !important;
+  }
+
+  .auth-card {
+    width: 100% !important;
+    max-width: 24.5rem !important;
+    margin: auto auto 0 !important;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.9)) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58) !important;
+  }
+
+  .auth-poster-wall {
+    opacity: 0.82 !important;
+  }
+
+  .studio-monetization {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100dvh !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+    padding: max(0.7rem, env(safe-area-inset-top)) 0.8rem calc(5.8rem + env(safe-area-inset-bottom)) !important;
+    background: #000 !important;
+    overflow-x: hidden !important;
+  }
+
+  .studio-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    display: flex !important;
+    grid-auto-flow: initial !important;
+    gap: 0.35rem !important;
+    min-height: auto !important;
+    margin: 0 -0.8rem !important;
+    padding: 0.45rem 0.8rem !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    background: rgba(0, 0, 0, 0.94) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .studio-sidebar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .studio-sidebar strong,
+  .studio-sidebar a {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .studio-sidebar strong {
+    padding: 0.65rem 0.55rem !important;
+  }
+
+  .studio-sidebar a {
+    min-height: 2.6rem !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0.55rem 0.8rem !important;
+    border-radius: 999px !important;
+  }
+
+  .studio-workspace,
+  .studio-panel,
+  .studio-alert,
+  .creator-tools,
+  .studio-table {
+    min-width: 0 !important;
+  }
+
+  .studio-topbar {
+    display: grid !important;
+    gap: 0.85rem !important;
+    align-items: stretch !important;
+    padding-top: 0.5rem !important;
+  }
+
+  .studio-topbar h1 {
+    font-size: clamp(2rem, 12vw, 3.5rem) !important;
+    line-height: 0.95 !important;
+  }
+
+  .studio-topbar .primary-button,
+  .creator-tools .primary-button,
+  .panel-head .primary-button,
+  .panel-head .ghost-button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .creator-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.6rem !important;
+  }
+
+  .creator-metrics article,
+  .eligibility-card,
+  .studio-panel,
+  .studio-steps article,
+  .creator-tools article {
+    border-radius: 14px !important;
+    padding: 0.9rem !important;
+  }
+
+  .eligibility-grid,
+  .creator-tools,
+  .studio-wide-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .studio-tabs {
+    overflow-x: auto !important;
+    padding-bottom: 0.25rem !important;
+    scrollbar-width: none !important;
+  }
+
+  .studio-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .studio-steps article,
+  .studio-row,
+  .panel-head {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.55rem !important;
+    align-items: start !important;
+  }
+
+  .studio-row img {
+    width: 100% !important;
+    max-height: 12rem !important;
+    object-fit: cover !important;
+  }
+
+  .data-location p,
+  .studio-row span,
+  .studio-row small {
+    overflow-wrap: anywhere !important;
+  }
+}
+
+.quality-select {
+  min-width: 5.6rem !important;
+  height: 2.35rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 999px !important;
+  color: #fff !important;
+  background: rgba(0, 0, 0, 0.58) !important;
+  padding: 0 0.6rem !important;
+  font: inherit !important;
+  font-weight: 850 !important;
+}
+
+.embed-video {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: #000 !important;
+}
+
+@media (max-width: 700px) {
+  .quality-select {
+    min-width: 4.7rem !important;
+    height: 2rem !important;
+    padding: 0 0.35rem !important;
+    font-size: 0.72rem !important;
+  }
+}

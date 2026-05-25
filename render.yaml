@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: iskd-anime-rust-api
+    env: rust
+    rootDir: rust-backend
+    buildCommand: cargo build --release
+    startCommand: ./target/release/iskd-anime-api
+    healthCheckPath: /health
+    disk:
+      name: iskd-anime-rust-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 10
+    envVars:
+      - key: DB_PATH
+        value: /opt/render/project/src/data/db.json
