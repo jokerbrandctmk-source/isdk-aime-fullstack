@@ -5586,3 +5586,25 @@ body {
     height: 2.9rem !important;
   }
 }
+.comment-card {
+
+  background: #111;
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  margin-top: 10px;
+}
+
+.comment-card h4 {
+
+  color: orange;
+
+  margin-bottom: 6px;
+}
+
+.comment-card p {
+
+  color: white;
+}

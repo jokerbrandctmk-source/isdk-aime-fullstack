@@ -1,3 +1,5 @@
+
+
 const SUPABASE_URL =
   "https://twdlpukkgdkviwxywbkl.supabase.co";
 
@@ -86,3 +88,102 @@ export async function fetchAnime() {
     return [];
   }
 }
+export async function addComment(
+  animeId,
+  username,
+  comment
+) {
+
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/comments`,
+    {
+      method: "POST",
+
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+
+      body: JSON.stringify({
+        anime_id: animeId,
+        username,
+        comment
+      })
+    }
+  );
+}
+
+export async function fetchComments(
+  animeId
+) {
+
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/comments?anime_id=eq.${animeId}&select=*`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  );
+
+  return await response.json();
+}
+const commentForm =
+  document.querySelector("#commentForm");
+
+const commentInput =
+  document.querySelector("#commentInput");
+
+const commentsContainer =
+  document.querySelector("#commentsContainer");
+
+async function loadComments(animeId) {
+
+  const comments =
+    await fetchComments(animeId);
+
+  commentsContainer.innerHTML =
+    comments.map(comment => `
+
+      <div class="comment-card">
+
+        <h4>${comment.username}</h4>
+
+        <p>${comment.comment}</p>
+
+      </div>
+
+    `).join("");
+}
+
+commentForm?.addEventListener(
+  "submit",
+  async (e) => {
+
+    e.preventDefault();
+
+    const username =
+      localStorage.getItem("username")
+      || "Anime Fan";
+
+    const comment =
+      commentInput.value.trim();
+
+    if (!comment) return;
+
+    await addComment(
+      anime.id,
+      username,
+      comment
+    );
+
+    commentInput.value = "";
+
+    await loadComments(anime.id);
+  }
+);
+
+loadComments(anime.id);

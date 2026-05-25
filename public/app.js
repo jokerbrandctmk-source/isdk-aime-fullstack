@@ -1332,6 +1332,21 @@ if (!firstEpisode) {
                 <video class="trailer-preview" muted loop autoplay playsinline preload="metadata" poster="${escapeHtml(backdropImage)}">
                   <source src="${escapeHtml(assetUrl(firstEpisode.video, ""))}" />
                 </video>
+                <form id="commentForm">
+
+  <input
+    id="commentInput"
+    type="text"
+    placeholder="Write comment..."
+  />
+
+  <button type="submit">
+    Send
+  </button>
+
+</form>
+
+<div id="commentsContainer"></div>
               `
               : ""
           }
