@@ -1199,9 +1199,9 @@ async function loadUserState() {
   
   try {
     const [me, watchlist, progress] = await Promise.all([
-      api.get("/api/me"),
-      api.get("/api/watchlist"),
-      api.get("/api/progress")
+      // api.get("/api/me"),
+      // api.get("/api/watchlist"),
+      // api.get("/api/progress")
     ]);
     state.user = me.user || null;
     state.watchlist = asArray(watchlist.slugs);
