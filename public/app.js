@@ -1971,7 +1971,12 @@ function bindAuthPage() {
       state.user = data.user;
       localStorage.setItem("isdk_aime_token", data.token);
       await loadUserState();
-      toast(`Signed in as ${state.user.username}.`);
+      toast(
+  `Signed in as ${
+    state.user?.username
+    || "Anime Fan"
+  }.`
+);
       updateAccountButton();
       location.hash = "#home";
     } catch (error) {
