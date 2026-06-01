@@ -1,7 +1,6 @@
 window.ISKD_CONFIG = {
   // Deploy Rust/Node API on Render, then paste URL here:
-  // apiBaseUrl: "https://your-api.onrender.com",
-  apiBaseUrl: "",
+  apiBaseUrl: "https://isdk-aime-fullstack.onrender.com",
   cloudinaryCloudName: "",
   cloudinaryUploadPreset: "",
   cloudinaryFolder: "iskd-anime"

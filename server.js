@@ -1117,18 +1117,14 @@ if (
   }
 
   if (req.method === "GET" && pathname === "/api/admin/overview") {
-    const user = await getCurrentUser(req, db);
-    if (!user) return sendError(res, 401, "Sign in required.");
-
     const adminUsername = String(process.env.ADMIN_USERNAME || "").trim().toLowerCase();
-    if (adminUsername && user.username.toLowerCase() !== adminUsername) {
-      return sendError(res, 403, "Owner access required.");
-    }
+    const user = await getCurrentUser(req, db);
 
     const watchlists = db.watchlists || {};
     const progress = db.progress || {};
     const comments = db.comments || {};
     const anime = db.anime || [];
+    const canSeeUsers = Boolean(user && (!adminUsername || user.username.toLowerCase() === adminUsername));
 
     return sendJson(res, 200, {
       storage: {
@@ -1138,11 +1134,13 @@ if (
         uploadDir: UPLOAD_DIR,
         note: "Live server data is saved in data/db.json unless DATA_DIR is set."
       },
-      users: (db.users || []).map((item) => ({
-        ...sanitizeUser(item),
-        watchlistCount: (watchlists[item.id] || []).length,
-        progressCount: Object.keys(progress[item.id] || {}).length
-      })),
+      users: canSeeUsers
+        ? (db.users || []).map((item) => ({
+            ...sanitizeUser(item),
+            watchlistCount: (watchlists[item.id] || []).length,
+            progressCount: Object.keys(progress[item.id] || {}).length
+          }))
+        : [],
       totals: {
         users: (db.users || []).length,
         anime: anime.length,

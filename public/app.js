@@ -82,6 +82,17 @@ function apiUrl(path) {
   return baseUrl && path.startsWith("/") ? `${baseUrl}${path}` : path;
 }
 
+function shouldUseLocalApiFirst() {
+  return !getApiBaseUrl() && /^(capacitor:|file:)/i.test(location.protocol);
+}
+
+function canFallbackToLocalApi(path, error) {
+  if (!getApiBaseUrl()) return true;
+  if (path.startsWith("/api/auth/")) return false;
+  if (error?.status) return false;
+  return false;
+}
+
 function isAbsoluteAsset(value) {
   return /^(https?:|data:|blob:|capacitor:|file:)/i.test(String(value || ""));
 }
@@ -320,6 +331,10 @@ function localStudioOverview() {
 }
 
 async function loadStudioOverview() {
+  if (!state.token) {
+    return localStudioOverview();
+  }
+
   try {
     return await api.get("/api/admin/overview");
   } catch {
@@ -834,6 +849,10 @@ async function localApi(path, options = {}) {
 
 const api = {
   async request(path, options = {}) {
+    if (shouldUseLocalApiFirst()) {
+      return localApi(path, options);
+    }
+
     const headers = {
       "Content-Type": "application/json",
       ...(options.headers || {})
@@ -854,14 +873,22 @@ const api = {
         : null;
 
       if (!response.ok) {
-        throw new Error(data?.error || "Something went wrong.");
+        const error = new Error(data?.error || "Something went wrong.");
+        error.status = response.status;
+        throw error;
       }
       if (!isValidApiPayload(path, data)) {
+        if (getApiBaseUrl()) {
+          throw new Error("Server data format is not valid.");
+        }
         return localApi(path, options);
       }
       return data;
     } catch (error) {
-      return localApi(path, options);
+      if (canFallbackToLocalApi(path, error)) {
+        return localApi(path, options);
+      }
+      throw error;
     }
   },
   get(path) {
@@ -1056,21 +1083,22 @@ function selectedAnime() {
 
 function startHeroSlider() {
   normalizeRuntimeState();
-  window.clearInterval(state.heroTimer);
+  window.clearTimeout(state.heroTimer);
   state.heroTimer = null;
 
   if (!state.anime || state.anime.length < 2 || !isHomeRoute()) return;
+  if (window.matchMedia?.("(max-width: 700px)").matches) return;
 
-  state.heroTimer = window.setInterval(() => {
+  state.heroTimer = window.setTimeout(() => {
     if (!isHomeRoute()) {
-      window.clearInterval(state.heroTimer);
+      window.clearTimeout(state.heroTimer);
       state.heroTimer = null;
       return;
     }
 
     state.heroIndex = (state.heroIndex + 1) % state.anime.length;
-    renderHome();
-  }, 6500);
+    window.requestAnimationFrame(() => renderHome());
+  }, 12000);
 }
 
 function renderSkeletonShell() {
@@ -1543,7 +1571,7 @@ function renderHome() {
           <p>Series, movies, cozy stories, action arcs, and new episodes.</p>
         </div>
       </div>
-      <div class="grid">${newest || '<div class="empty-state"><p>No matches found.</p></div>'}</div>
+      <div class="rail browse-rail">${newest || '<div class="empty-state"><p>No matches found.</p></div>'}</div>
     </section>
   `;
 }
