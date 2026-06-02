@@ -32,6 +32,8 @@ const state = {
   watchlist: [],
   progress: {},
   authMode: "login",
+  pendingOtp: "",
+  pendingOtpTarget: "",
   currentTimer: null,
   viewedSlugs: new Set(),
   heroIndex: 0,
@@ -1927,7 +1929,6 @@ function renderAuthPage() {
       <div class="auth-slideshow" aria-hidden="true">${imageSlides}</div>
       <div class="screen-header">
         <a class="back-arrow" href="#home" aria-label="Back">&larr;</a>
-        <img class="auth-logo" src="/assets/logo.svg" alt="ISKD Anime" />
       </div>
       <div class="auth-cinema-panel" aria-hidden="true">
         <div class="auth-poster-wall">${posterWall}</div>
@@ -1942,15 +1943,23 @@ function renderAuthPage() {
         </div>
       </div>
       <form class="auth-card" id="pageAuthForm">
+        <p class="auth-welcome">Welcome my ISKD Anime App</p>
         <h1>${isRegister ? "Create Account" : "Sign In"}</h1>
         <label>
-          Email or Username
-          <input name="username" required minlength="3" autocomplete="username" placeholder="you@example.com" />
+          Gmail or Phone Number
+          <input name="username" required minlength="3" autocomplete="username" placeholder="you@gmail.com or +91 phone" />
         </label>
         <label>
           Password
           <input name="password" required minlength="6" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" placeholder="Minimum 6 characters" />
         </label>
+        <div class="otp-row">
+          <label>
+            OTP
+            <input name="otp" required inputmode="numeric" minlength="6" maxlength="6" autocomplete="one-time-code" placeholder="6 digit OTP" />
+          </label>
+          <button class="ghost-button otp-button" type="button" data-send-otp>Send OTP</button>
+        </div>
         <button class="primary-button glow-button wide" type="submit">${isRegister ? "Create Account" : "Sign In"}</button>
         <button class="text-switch" type="button" data-page-auth-mode="${isRegister ? "login" : "register"}">
           ${isRegister ? "Already have an account? SIGN IN" : "New here? SIGN UP"}
@@ -1968,6 +1977,7 @@ function bindAuthPage() {
   const message = document.querySelector("#pageAuthMessage");
   const modeButtons = Array.from(document.querySelectorAll("[data-page-auth-mode]"));
   const featureButtons = Array.from(document.querySelectorAll("[data-auth-feature]"));
+  const otpButton = document.querySelector("[data-send-otp]");
 
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -1983,13 +1993,32 @@ function bindAuthPage() {
     });
   });
 
+  otpButton?.addEventListener("click", () => {
+    const target = String(new FormData(form).get("username") || "").trim();
+    if (!target || target.length < 3) {
+      message.textContent = "Pehle Gmail ya phone number enter karo.";
+      return;
+    }
+    state.pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
+    state.pendingOtpTarget = target.toLowerCase();
+    message.textContent = `Test OTP sent: ${state.pendingOtp}`;
+    toast(`OTP: ${state.pendingOtp}`);
+  });
+
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     message.textContent = state.authMode === "register" ? "Creating account..." : "Signing in...";
 
     const formData = new FormData(form);
+    const username = String(formData.get("username") || "").trim();
+    const otp = String(formData.get("otp") || "").trim();
+    if (!state.pendingOtp || state.pendingOtpTarget !== username.toLowerCase() || otp !== state.pendingOtp) {
+      message.textContent = "OTP compulsory hai. Send OTP dabao aur 6 digit OTP enter karo.";
+      return;
+    }
+
     const payload = {
-      username: formData.get("username"),
+      username,
       password: formData.get("password")
     };
 

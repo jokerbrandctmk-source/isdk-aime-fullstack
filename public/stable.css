@@ -2117,3 +2117,108 @@ body.auth-mode {
     margin: auto !important;
   }
 }
+
+/* Auth final force: centered on laptop + phone, visible anime background, no logo. */
+.auth-page.mobile-auth-screen {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+  justify-items: center !important;
+  place-items: center !important;
+  min-height: 100dvh !important;
+  padding: max(4rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)) !important;
+}
+
+.auth-logo {
+  display: none !important;
+}
+
+.auth-page .screen-header {
+  left: clamp(0.9rem, 4vw, 4.6rem) !important;
+  top: clamp(0.8rem, 4vh, 3.2rem) !important;
+  right: auto !important;
+  width: auto !important;
+}
+
+.auth-page .back-arrow {
+  font-size: 1.65rem !important;
+}
+
+.auth-cinema-panel,
+.auth-slideshow {
+  position: fixed !important;
+  inset: 0 !important;
+  display: block !important;
+}
+
+.auth-poster-wall {
+  opacity: 0.72 !important;
+  filter: saturate(1.2) contrast(1.08) brightness(0.88) !important;
+}
+
+.auth-slideshow {
+  opacity: 0.5 !important;
+}
+
+.auth-page.mobile-auth-screen::before,
+.auth-page.mobile-auth-screen::after {
+  pointer-events: none !important;
+}
+
+.auth-page.mobile-auth-screen::before {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.64) 48%, #000 92%) !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.34) 52%, rgba(0, 0, 0, 0.76)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.12), #000 105%) !important;
+}
+
+.auth-card {
+  justify-self: center !important;
+  align-self: center !important;
+  width: min(92vw, 420px) !important;
+  max-width: 420px !important;
+}
+
+.auth-welcome {
+  margin: 0 0 0.55rem !important;
+  color: var(--stable-orange) !important;
+  font-size: 0.78rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.otp-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 0.65rem !important;
+  align-items: end !important;
+}
+
+.otp-row label {
+  min-width: 0 !important;
+}
+
+.otp-button {
+  min-height: 3.25rem !important;
+  padding-inline: 1rem !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 700px) {
+  .auth-page.mobile-auth-screen {
+    padding: max(3.6rem, env(safe-area-inset-top)) 0.8rem max(0.9rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .auth-card {
+    width: min(92vw, 22.5rem) !important;
+  }
+
+  .otp-row {
+    grid-template-columns: 1fr !important;
+  }
+}
