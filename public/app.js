@@ -1909,7 +1909,7 @@ function renderAuthPage() {
         `<span style="--auth-slide: url('${escapeHtml(assetUrl(anime.backdrop || anime.poster))}'); --slide-index: ${index};"></span>`
     )
     .join("");
-  const posterWall = authImages
+  const posterWall = Array.from({ length: 18 }, (_, index) => authImages[index % authImages.length])
     .map(
       (anime, index) => `
         <img
@@ -1955,7 +1955,7 @@ function renderAuthPage() {
         <button class="text-switch" type="button" data-page-auth-mode="${isRegister ? "login" : "register"}">
           ${isRegister ? "Already have an account? SIGN IN" : "New here? SIGN UP"}
         </button>
-        <p class="firebase-note">By continuing you agree to ISKD Anime terms and privacy rules. Login works on web, localhost, and APK fallback.</p>
+        <p class="firebase-note">Sign up first if this account is new. Your cloud account keeps uploads, watchlist, likes, and comments synced.</p>
         <p id="pageAuthMessage" class="form-message" role="status"></p>
       </form>
     </section>
@@ -2008,7 +2008,10 @@ function bindAuthPage() {
       updateAccountButton();
       location.hash = "#home";
     } catch (error) {
-      message.textContent = error.message;
+      message.textContent =
+        error.status === 401
+          ? "Invalid login. Agar account naya hai to SIGN UP pehle karo."
+          : error.message;
     }
   });
 }

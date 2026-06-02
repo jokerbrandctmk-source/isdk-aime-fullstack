@@ -39,6 +39,12 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || "";
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
 const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || "iskd-anime";
+const SUPABASE_URL = String(process.env.SUPABASE_URL || "").replace(/\/+$/, "");
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  "";
+const SUPABASE_ANIME_TABLE = process.env.SUPABASE_ANIME_TABLE || "anime";
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -375,6 +381,113 @@ function cleanAssetPath(value) {
   }
 
   return "";
+}
+
+function hasSupabaseAnime() {
+  return Boolean(SUPABASE_URL && SUPABASE_KEY);
+}
+
+async function supabaseRequest(pathname, options = {}) {
+  if (!hasSupabaseAnime()) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${pathname}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    const message = data?.message || data?.error || "Supabase request failed.";
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+function supabaseAnimeSlug(row) {
+  return `supabase-${row.id}-${slugify(row.title || "anime")}`;
+}
+
+function supabaseRowToAnime(row) {
+  const title = cleanText(row.title, "Untitled", 120);
+  const synopsis = cleanText(row.description, "No description added yet.", 900);
+  const genres = cleanList(row.genre, ["Action"]);
+  const slug = supabaseAnimeSlug(row);
+  const poster = cleanAssetPath(row.poster) || "/assets/anime/poster.png";
+  const video = cleanAssetPath(row.video);
+  const createdAt = row.created_at || new Date().toISOString();
+
+  return publicAnime({
+    id: `supabase_${row.id}`,
+    supabaseId: row.id,
+    slug,
+    title,
+    japaneseTitle: "",
+    tagline: synopsis.slice(0, 150),
+    synopsis,
+    type: "Movie",
+    year: new Date(createdAt).getFullYear() || new Date().getFullYear(),
+    rating: Number(row.rating) || 4.5,
+    maturity: "13+",
+    status: "Supabase",
+    studios: ["ISKD Cloud"],
+    languages: ["Sub"],
+    duration: "24m",
+    genres,
+    contentCategory: "Anime",
+    mood: genres[0] || "Action",
+    popularity: Number(row.id) || 1,
+    views: 0,
+    likes: 0,
+    likedBy: [],
+    accent: "#ff6518",
+    secondary: "#16d8cb",
+    poster,
+    backdrop: poster,
+    createdAt,
+    episodes: [
+      {
+        id: `${slug}-01`,
+        number: 1,
+        title: "Episode 1",
+        duration: 24 * 60,
+        ...(video ? { video } : {}),
+        synopsis
+      }
+    ]
+  });
+}
+
+async function readSupabaseAnime() {
+  const rows = await supabaseRequest(
+    `${SUPABASE_ANIME_TABLE}?select=*&order=created_at.desc`
+  );
+  return Array.isArray(rows) ? rows.map(supabaseRowToAnime) : [];
+}
+
+async function insertSupabaseAnime(body) {
+  const title = cleanText(body.title, "", 120);
+  const description = cleanText(body.synopsis || body.description, "", 900);
+  const poster = cleanAssetPath(body.poster || body.backdrop);
+  const video = cleanAssetPath(body.episodeVideo || body.video);
+  const genre = cleanList(body.genres || body.genre, ["Action"]).join(", ");
+  const rating = cleanText(body.rating, "4.5", 12);
+
+  const rows = await supabaseRequest(SUPABASE_ANIME_TABLE, {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify([{ title, description, poster, video, rating, genre }])
+  });
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  return supabaseRowToAnime(row);
 }
 
 function parseMultipart(req, options = {}) {
@@ -765,6 +878,16 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === "GET" && pathname === "/api/genres") {
+    if (hasSupabaseAnime()) {
+      try {
+        const anime = await readSupabaseAnime();
+        const genres = Array.from(new Set(anime.flatMap((item) => item.genres || []))).sort();
+        return sendJson(res, 200, { genres });
+      } catch (error) {
+        return sendError(res, 502, `Supabase genres failed: ${error.message}`);
+      }
+    }
+
     const genres = Array.from(new Set(db.anime.flatMap((anime) => anime.genres))).sort();
     return sendJson(res, 200, { genres });
   }
@@ -774,7 +897,18 @@ async function handleApi(req, res, url) {
     const genre = (url.searchParams.get("genre") || "All").trim();
     const type = (url.searchParams.get("type") || "All").trim();
 
-    let anime = db.anime;
+    let anime;
+
+    if (hasSupabaseAnime()) {
+      try {
+        anime = await readSupabaseAnime();
+      } catch (error) {
+        return sendError(res, 502, `Supabase anime failed: ${error.message}`);
+      }
+    } else {
+      anime = db.anime;
+    }
+
     if (search) {
       anime = anime.filter((item) => {
         const text = [
@@ -831,6 +965,15 @@ anime = anime
     }
     if (synopsis.length < 10) {
       return sendError(res, 400, "Synopsis must be at least 10 characters.");
+    }
+
+    if (hasSupabaseAnime()) {
+      try {
+        const anime = await insertSupabaseAnime(body);
+        return sendJson(res, 201, { anime });
+      } catch (error) {
+        return sendError(res, 502, `Supabase upload failed: ${error.message}`);
+      }
     }
 
     const slug = uniqueSlug(db, title);
@@ -936,8 +1079,17 @@ if (
   parts[2]
 ) {
 
-  const anime =
-    findAnime(db, parts[2]);
+  let anime;
+
+  if (hasSupabaseAnime()) {
+    try {
+      anime = (await readSupabaseAnime()).find((item) => item.slug === parts[2]);
+    } catch (error) {
+      return sendError(res, 502, `Supabase anime failed: ${error.message}`);
+    }
+  } else {
+    anime = findAnime(db, parts[2]);
+  }
 
   if (!anime) {
 

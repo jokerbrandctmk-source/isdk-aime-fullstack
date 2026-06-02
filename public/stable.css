@@ -1963,3 +1963,157 @@ body {
     border-radius: 999px !important;
   }
 }
+
+/* Final auth redesign: Netflix-style cinematic wall with one centered form. */
+body.auth-mode {
+  background: #000 !important;
+}
+
+.auth-page.mobile-auth-screen {
+  min-height: 100dvh !important;
+  grid-template-columns: 1fr !important;
+  place-items: center !important;
+  padding: max(4.75rem, calc(env(safe-area-inset-top) + 4rem)) 1rem 1.25rem !important;
+  isolation: isolate !important;
+}
+
+.auth-page.mobile-auth-screen::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.72) 42%, #000 88%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.32), #000 100%) !important;
+  pointer-events: none !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  z-index: 1 !important;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.36) 48%, rgba(0, 0, 0, 0.86)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), #000 100%) !important;
+}
+
+.auth-page .screen-header {
+  top: max(0.8rem, env(safe-area-inset-top)) !important;
+  left: 1rem !important;
+  width: auto !important;
+  grid-template-columns: auto auto !important;
+  gap: 0.75rem !important;
+  transform: none !important;
+}
+
+.auth-page .back-arrow {
+  width: 2.7rem !important;
+  height: 2.7rem !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: rgba(0, 0, 0, 0.54) !important;
+}
+
+.auth-logo {
+  width: clamp(8rem, 10vw, 11rem) !important;
+}
+
+.auth-slideshow {
+  opacity: 0.38 !important;
+}
+
+.auth-cinema-panel {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.auth-poster-wall {
+  position: absolute !important;
+  inset: -16vh -10vw !important;
+  height: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(120px, 1fr)) !important;
+  gap: clamp(0.55rem, 1vw, 1rem) !important;
+  transform: rotate(-8deg) scale(1.08) !important;
+  opacity: 0.58 !important;
+  filter: saturate(1.12) contrast(1.05) brightness(0.74) !important;
+}
+
+.auth-poster-wall img {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+  border-radius: 6px !important;
+}
+
+.auth-brand-copy {
+  display: none !important;
+}
+
+.auth-card {
+  z-index: 3 !important;
+  width: min(100%, 390px) !important;
+  max-width: 390px !important;
+  margin: 0 auto !important;
+  padding: clamp(1.45rem, 3vw, 2rem) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(10px) saturate(1.15) !important;
+}
+
+.auth-card h1 {
+  text-align: left !important;
+}
+
+.auth-card input {
+  border-radius: 2px !important;
+  background: rgba(22, 25, 33, 0.92) !important;
+}
+
+.auth-card .primary-button {
+  background: #e50914 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.auth-card .text-switch {
+  border-radius: 4px !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.rail .anime-card:hover,
+.grid .anime-card:hover,
+.mobile-poster-grid .anime-card:hover,
+.browse-rail .anime-card:hover,
+.rail .poster-button:hover,
+.grid .poster-button:hover,
+.mobile-poster-grid .poster-button:hover {
+  transform: none !important;
+}
+
+.rail .poster-button:hover img,
+.grid .poster-button:hover img,
+.mobile-poster-grid .poster-button:hover img,
+.browse-rail .poster-button:hover img {
+  transform: none !important;
+}
+
+@media (max-width: 700px) {
+  .auth-poster-wall {
+    inset: -8vh -26vw !important;
+    grid-template-columns: repeat(4, minmax(92px, 1fr)) !important;
+    transform: rotate(-7deg) scale(1.16) !important;
+    opacity: 0.48 !important;
+  }
+
+  .auth-card {
+    width: min(100%, 22rem) !important;
+    margin: auto !important;
+  }
+}
