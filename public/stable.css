@@ -2222,3 +2222,59 @@ body.auth-mode {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Auth polish: no extra web back arrow, clearer poster background, centered form. */
+.auth-page .screen-header,
+.auth-page .back-arrow {
+  display: none !important;
+}
+
+.auth-page.mobile-auth-screen {
+  overflow: hidden !important;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)) !important;
+}
+
+.auth-poster-wall {
+  inset: -12vh -8vw !important;
+  opacity: 0.92 !important;
+  filter: saturate(1.28) contrast(1.12) brightness(1.02) !important;
+}
+
+.auth-slideshow {
+  opacity: 0.68 !important;
+  filter: saturate(1.2) contrast(1.08) brightness(0.95) !important;
+}
+
+.auth-page.mobile-auth-screen::before {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.44) 54%, rgba(0, 0, 0, 0.82) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.68) 100%) !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.66), rgba(0, 0, 0, 0.16) 52%, rgba(0, 0, 0, 0.66)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.82) 105%) !important;
+}
+
+.auth-card {
+  background: rgba(0, 0, 0, 0.68) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.auth-card h1,
+.auth-welcome {
+  text-align: center !important;
+}
+
+@media (max-width: 700px) {
+  .auth-page.mobile-auth-screen {
+    padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom)) !important;
+  }
+
+  .auth-poster-wall {
+    inset: -8vh -34vw !important;
+    grid-template-columns: repeat(4, minmax(92px, 1fr)) !important;
+    opacity: 0.9 !important;
+  }
+}

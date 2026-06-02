@@ -1253,7 +1253,10 @@ if (
     );
 
     if (!user || !passwordMatches(password, user.passwordHash)) {
-      return sendError(res, 401, "Invalid username or password.");
+      return sendJson(res, 200, {
+        authError: true,
+        error: "Invalid username or password."
+      });
     }
 
     return sendJson(res, 200, {

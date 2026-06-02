@@ -874,6 +874,12 @@ const api = {
         ? await response.json().catch(() => null)
         : null;
 
+      if (data?.authError) {
+        const error = new Error(data.error || "Invalid username or password.");
+        error.status = 401;
+        throw error;
+      }
+
       if (!response.ok) {
         const error = new Error(data?.error || "Something went wrong.");
         error.status = response.status;
@@ -1927,9 +1933,6 @@ function renderAuthPage() {
   app.innerHTML = `
     <section class="auth-page mobile-auth-screen">
       <div class="auth-slideshow" aria-hidden="true">${imageSlides}</div>
-      <div class="screen-header">
-        <a class="back-arrow" href="#home" aria-label="Back">&larr;</a>
-      </div>
       <div class="auth-cinema-panel" aria-hidden="true">
         <div class="auth-poster-wall">${posterWall}</div>
         <div class="auth-brand-copy">
