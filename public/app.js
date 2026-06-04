@@ -1,3 +1,14 @@
+import {
+  auth,
+  provider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
+} from "./firebase.js";
 import { fetchAnime } from "./api.js";
 const app = document.querySelector("#app");
 const modalRoot = document.querySelector("#modalRoot");
@@ -28,12 +39,13 @@ const state = {
   selectedType: "All",
   search: "",
   token: localStorage.getItem("isdk_aime_token") || "",
-  user: null,
+  user: JSON.parse(localStorage.getItem("firebase_user") || "null"),
   watchlist: [],
   progress: {},
   authMode: "login",
   pendingOtp: "",
   pendingOtpTarget: "",
+  phoneConfirmation: null,
   currentTimer: null,
   viewedSlugs: new Set(),
   heroIndex: 0,
@@ -760,7 +772,7 @@ async function localApi(path, options = {}) {
       likedBy: [],
       custom: true,
       createdBy: state.user?.id || currentLocalUser()?.id || getClientId(),
-      createdByName: state.user?.username || currentLocalUser()?.username || "Creator",
+      createdByName: displayNameFromUser(state.user || currentLocalUser()),
       episodes: [
         {
           id: `${slug}-01`,
@@ -837,7 +849,7 @@ async function localApi(path, options = {}) {
       const user = currentLocalUser();
       db.comments[episodeId].unshift({
         id: `comment_${Date.now()}`,
-        user: user?.username || "Guest",
+        user: user?.email || user?.username || "Guest",
         body: body.body || "",
         createdAt: new Date().toISOString()
       });
@@ -966,8 +978,34 @@ function toast(message) {
   window.setTimeout(() => node.remove(), 3200);
 }
 
+function firebaseErrorMessage(error) {
+  const code = String(error?.code || "");
+  if (code.includes("auth/user-not-found") || code.includes("auth/invalid-credential")) {
+    return "Invalid login. Agar account naya hai to SIGN UP pehle karo.";
+  }
+  if (code.includes("auth/email-already-in-use")) {
+    return "Ye Gmail already registered hai. SIGN IN karo.";
+  }
+  if (code.includes("auth/weak-password")) {
+    return "Password kam se kam 6 characters ka rakho.";
+  }
+  if (code.includes("auth/popup")) {
+    return "Google popup block/cancel ho gaya. Browser popup allow karo.";
+  }
+  if (code.includes("auth/invalid-email")) {
+    return "Valid Gmail enter karo.";
+  }
+  return error?.message || "Firebase login failed.";
+}
+
 function displayNameFromUser(user = state.user) {
-  const value = String(user?.username || "Guest").trim();
+  const value = String(
+    user?.displayName ||
+    user?.username ||
+    user?.email ||
+    user?.phoneNumber ||
+    "Not logged in"
+  ).trim();
   return value.includes("@") ? value.split("@")[0] : value;
 }
 
@@ -976,7 +1014,7 @@ function userInitial(user = state.user) {
 }
 
 function avatarColor(user = state.user) {
-  const seed = String(user?.username || "guest");
+  const seed = String(user?.email || user?.username || user?.uid || "guest");
   let total = 0;
   for (const letter of seed) total += letter.charCodeAt(0);
   const colors = ["#f4b942", "#1ed3c6", "#ff6b35", "#57cc99", "#8ecae6"];
@@ -984,7 +1022,7 @@ function avatarColor(user = state.user) {
 }
 
 function getProfilePhoto() {
-  return localStorage.getItem(PROFILE_PHOTO_KEY) || "";
+  return state.user?.photoURL || localStorage.getItem(PROFILE_PHOTO_KEY) || "";
 }
 
 function setProfilePhoto(value) {
@@ -1042,7 +1080,7 @@ function renderAccountMenu() {
         ${renderAvatar("account-avatar")}
         <div>
           <strong>${escapeHtml(displayNameFromUser())}</strong>
-          <small>${escapeHtml(state.user.username || "")}</small>
+          <small>${escapeHtml(state.user.email || state.user.username || state.user.phoneNumber || "")}</small>
           <a href="#subscribe/audience" data-account-route>View channel</a>
         </div>
       </div>
@@ -1230,24 +1268,26 @@ async function loadAnime() {
 }
 
 async function loadUserState() {
-  if (!state.token) return;
+  if (!state.token) {
+    state.watchlist = asArray(readLocalDb().watchlist);
+    state.progress = asObject(readLocalDb().progress);
+    return;
+  }
 
-  
   try {
     const [me, watchlist, progress] = await Promise.all([
-      // api.get("/api/me"),
-      // api.get("/api/watchlist"),
-      // api.get("/api/progress")
+      api.get("/api/me"),
+      api.get("/api/watchlist"),
+      api.get("/api/progress")
     ]);
-    state.user = me.user || null;
+    state.user = state.user || me.user || null;
     state.watchlist = asArray(watchlist.slugs);
     state.progress = asObject(progress.progress);
   } catch {
     state.token = "";
-    state.user = null;
     state.watchlist = [];
     state.progress = {};
-   localStorage.removeItem(
+    localStorage.removeItem(
       "isdk_aime_token"
     );
   }
@@ -1800,8 +1840,8 @@ function renderPremiumPage() {
 
 function renderAccountPage() {
   const user = state.user || currentLocalUser();
-  const name = user ? displayNameFromUser() : "Guest";
-  const email = user?.username?.includes("@") ? user.username : `${String(user?.username || "guest").toLowerCase()}@iskd.app`;
+  const name = user ? displayNameFromUser() : "Not logged in";
+  const email = user?.email || (user?.username?.includes("@") ? user.username : `${String(user?.username || "guest").toLowerCase()}@iskd.app`);
   app.innerHTML = `
     <section class="mobile-page account-page">
       <div class="mobile-page-head">
@@ -1851,7 +1891,7 @@ function renderProfilesPage() {
       </div>
       <form class="profile-form" id="profileForm">
         <label>Profile Name<input name="profileName" value="${escapeHtml(profileName)}" /></label>
-        <label>Username<input name="username" value="${escapeHtml(user?.username || "creator")}" /></label>
+        <label>Username<input name="username" value="${escapeHtml(user?.email || user?.username || "creator")}" /></label>
         <button class="primary-button wide" type="submit">Save</button>
       </form>
     </section>
@@ -1883,12 +1923,18 @@ function renderProfilesPage() {
   });
 }
 
-function logoutAccount() {
+async function logoutAccount() {
+  try {
+    await signOut(auth);
+  } catch {
+    // Local session cleanup still runs if Firebase is already signed out.
+  }
   state.token = "";
   state.user = null;
   state.watchlist = [];
   state.progress = {};
   localStorage.removeItem("isdk_aime_token");
+  localStorage.removeItem("firebase_user");
   closeAccountMenu();
   updateAccountButton();
   route();
@@ -1932,6 +1978,7 @@ function renderAuthPage() {
     .join("");
   app.innerHTML = `
     <section class="auth-page mobile-auth-screen">
+      <button class="mobile-auth-back" type="button" data-auth-back aria-label="Back">‹</button>
       <div class="auth-slideshow" aria-hidden="true">${imageSlides}</div>
       <div class="auth-cinema-panel" aria-hidden="true">
         <div class="auth-poster-wall">${posterWall}</div>
@@ -1954,7 +2001,7 @@ function renderAuthPage() {
         </label>
         <label>
           Password
-          <input name="password" required minlength="6" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" placeholder="Minimum 6 characters" />
+          <input name="password" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" placeholder="Email login ke liye minimum 6 characters" />
         </label>
         <div class="otp-row">
           <label>
@@ -1964,6 +2011,10 @@ function renderAuthPage() {
           <button class="ghost-button otp-button" type="button" data-send-otp>Send OTP</button>
         </div>
         <button class="primary-button glow-button wide" type="submit">${isRegister ? "Create Account" : "Sign In"}</button>
+        <button class="google-auth-button" type="button" data-google-login>
+          <span>G</span>
+          Continue with Google
+        </button>
         <button class="text-switch" type="button" data-page-auth-mode="${isRegister ? "login" : "register"}">
           ${isRegister ? "Already have an account? SIGN IN" : "New here? SIGN UP"}
         </button>
@@ -1981,6 +2032,16 @@ function bindAuthPage() {
   const modeButtons = Array.from(document.querySelectorAll("[data-page-auth-mode]"));
   const featureButtons = Array.from(document.querySelectorAll("[data-auth-feature]"));
   const otpButton = document.querySelector("[data-send-otp]");
+  const googleButton = document.querySelector("[data-google-login]");
+  const backButton = document.querySelector("[data-auth-back]");
+
+  backButton?.addEventListener("click", () => {
+    if (history.length > 1) {
+      history.back();
+      return;
+    }
+    location.hash = "#home";
+  });
 
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -1996,16 +2057,37 @@ function bindAuthPage() {
     });
   });
 
-  otpButton?.addEventListener("click", () => {
+  otpButton?.addEventListener("click", async () => {
     const target = String(new FormData(form).get("username") || "").trim();
     if (!target || target.length < 3) {
       message.textContent = "Pehle Gmail ya phone number enter karo.";
       return;
     }
-    state.pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
-    state.pendingOtpTarget = target.toLowerCase();
-    message.textContent = `Test OTP sent: ${state.pendingOtp}`;
-    toast(`OTP: ${state.pendingOtp}`);
+    try {
+      if (isPhoneLogin(target)) {
+        const phoneNumber = await sendFirebasePhoneOtp(target);
+        message.textContent = `OTP sent to ${phoneNumber}.`;
+        toast("Phone OTP sent.");
+        return;
+      }
+      state.pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
+      state.pendingOtpTarget = target.toLowerCase();
+      message.textContent = `Email test OTP: ${state.pendingOtp}`;
+      toast(`OTP: ${state.pendingOtp}`);
+    } catch (error) {
+      message.textContent = firebaseErrorMessage(error);
+    }
+  });
+
+  googleButton?.addEventListener("click", async () => {
+    try {
+      message.textContent = "Opening Google login...";
+      await googleLogin();
+      toast(`Signed in as ${displayNameFromUser()}.`);
+      location.hash = "#home";
+    } catch (error) {
+      message.textContent = firebaseErrorMessage(error);
+    }
   });
 
   form?.addEventListener("submit", async (event) => {
@@ -2015,35 +2097,35 @@ function bindAuthPage() {
     const formData = new FormData(form);
     const username = String(formData.get("username") || "").trim();
     const otp = String(formData.get("otp") || "").trim();
-    if (!state.pendingOtp || state.pendingOtpTarget !== username.toLowerCase() || otp !== state.pendingOtp) {
-      message.textContent = "OTP compulsory hai. Send OTP dabao aur 6 digit OTP enter karo.";
-      return;
-    }
-
-    const payload = {
-      username,
-      password: formData.get("password")
-    };
+    const password = String(formData.get("password") || "");
 
     try {
-      const data = await api.post(`/api/auth/${state.authMode}`, payload);
-      state.token = data.token;
-      state.user = data.user;
-      localStorage.setItem("isdk_aime_token", data.token);
-      await loadUserState();
-      toast(
-  `Signed in as ${
-    state.user?.username
-    || "Anime Fan"
-  }.`
-);
+      if (isPhoneLogin(username)) {
+        await firebasePhoneLogin(username, otp);
+      } else {
+        if (!state.pendingOtp || state.pendingOtpTarget !== username.toLowerCase() || otp !== state.pendingOtp) {
+          message.textContent = "OTP compulsory hai. Send OTP dabao aur 6 digit OTP enter karo.";
+          return;
+        }
+        if (!username.includes("@")) {
+          message.textContent = "Valid Gmail ya phone number enter karo.";
+          return;
+        }
+        if (password.length < 6) {
+          message.textContent = "Email login ke liye password minimum 6 characters ka hona chahiye.";
+          return;
+        }
+        if (state.authMode === "register") {
+          await firebaseSignup(username, password);
+        } else {
+          await firebaseLogin(username, password);
+        }
+      }
+      toast(`Signed in as ${displayNameFromUser()}.`);
       updateAccountButton();
       location.hash = "#home";
     } catch (error) {
-      message.textContent =
-        error.status === 401
-          ? "Invalid login. Agar account naya hai to SIGN UP pehle karo."
-          : error.message;
+      message.textContent = firebaseErrorMessage(error);
     }
   });
 }
@@ -2399,7 +2481,7 @@ function renderAddAnime() {
       <div class="section-heading">
         <div>
           <h2>Add Your Content</h2>
-          <p>${state.user ? `Upload anime, South movie, Bollywood, Hollywood, web series, or your own videos as ${escapeHtml(state.user.username)}.` : "Sign in first, then add your own content."}</p>
+          <p>${state.user ? `Upload anime, South movie, Bollywood, Hollywood, web series, or your own videos as ${escapeHtml(displayNameFromUser())}.` : "Sign in first, then add your own content."}</p>
         </div>
         ${!state.user ? '<button class="primary-button" type="button" data-open-auth>Sign in</button>' : ""}
       </div>
@@ -2455,7 +2537,7 @@ function renderAddAnime() {
                 </label>
                 <label>
                   Studio name
-                  <input name="studio" maxlength="60" placeholder="${escapeHtml(state.user.username)} Studio" />
+                  <input name="studio" maxlength="60" placeholder="${escapeHtml(displayNameFromUser())} Studio" />
                 </label>
                 <label>
                   Genres / tags
@@ -3295,6 +3377,151 @@ function openAuthModal() {
   modalRoot.append(template.content.cloneNode(true));
   bindAuthModal();
 }
+function storeFirebaseUser(user) {
+  if (!user) {
+    localStorage.removeItem("firebase_user");
+    return;
+  }
+  const savedUser = {
+    uid: user.uid,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    displayName: user.displayName,
+    photoURL: user.photoURL
+  };
+  localStorage.setItem("firebase_user", JSON.stringify(savedUser));
+  state.user = savedUser;
+}
+
+async function syncFirebaseSession(user) {
+  if (!user) return null;
+  const data = await api.post("/api/auth/firebase", {
+    uid: user.uid,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    displayName: user.displayName,
+    photoURL: user.photoURL
+  });
+  state.token = data.token || "";
+  localStorage.setItem("isdk_aime_token", state.token);
+  state.user = {
+    ...state.user,
+    ...(data.user || {}),
+    uid: user.uid,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    displayName: user.displayName,
+    photoURL: user.photoURL
+  };
+  storeFirebaseUser(state.user);
+  await loadUserState();
+  return data;
+}
+
+async function firebaseLogin(email, password) {
+  const result = await signInWithEmailAndPassword(auth, email, password);
+  storeFirebaseUser(result.user);
+  await syncFirebaseSession(result.user);
+  updateAccountButton();
+  return result.user;
+}
+
+async function firebaseSignup(email, password) {
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  storeFirebaseUser(result.user);
+  await syncFirebaseSession(result.user);
+  updateAccountButton();
+  return result.user;
+}
+
+async function googleLogin() {
+  const result = await signInWithPopup(auth, provider);
+  storeFirebaseUser(result.user);
+  await syncFirebaseSession(result.user);
+  updateAccountButton();
+  return result.user;
+}
+
+function normalizePhoneNumber(value) {
+  const raw = String(value || "").trim().replace(/\s+/g, "");
+  if (!raw) return "";
+  if (raw.startsWith("+")) return raw;
+  const digits = raw.replace(/\D/g, "");
+  return digits.length === 10 ? `+91${digits}` : `+${digits}`;
+}
+
+function isPhoneLogin(value) {
+  const raw = String(value || "").trim();
+  return /^\+?\d[\d\s-]{8,}$/.test(raw) && !raw.includes("@");
+}
+
+function ensureRecaptchaVerifier() {
+  let container = document.querySelector("#firebaseRecaptcha");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "firebaseRecaptcha";
+    container.className = "firebase-recaptcha";
+    document.body.appendChild(container);
+  }
+  if (!window.isdkRecaptchaVerifier) {
+    window.isdkRecaptchaVerifier = new RecaptchaVerifier(auth, "firebaseRecaptcha", {
+      size: "invisible"
+    });
+  }
+  return window.isdkRecaptchaVerifier;
+}
+
+async function sendFirebasePhoneOtp(phoneValue) {
+  const phoneNumber = normalizePhoneNumber(phoneValue);
+  if (!phoneNumber || phoneNumber.length < 10) {
+    throw new Error("Valid phone number enter karo.");
+  }
+  state.phoneConfirmation = await signInWithPhoneNumber(auth, phoneNumber, ensureRecaptchaVerifier());
+  state.pendingOtp = "firebase";
+  state.pendingOtpTarget = phoneNumber.toLowerCase();
+  return phoneNumber;
+}
+
+async function firebasePhoneLogin(phoneValue, otp) {
+  if (!state.phoneConfirmation) {
+    throw new Error("Pehle Send OTP dabao.");
+  }
+  const result = await state.phoneConfirmation.confirm(String(otp || "").trim());
+  storeFirebaseUser(result.user);
+  await syncFirebaseSession(result.user);
+  updateAccountButton();
+  return result.user;
+}
+
+let firebaseAuthReady;
+
+function startFirebaseAuthListener() {
+  if (firebaseAuthReady) return firebaseAuthReady;
+  let resolved = false;
+  firebaseAuthReady = new Promise((resolve) => {
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        if (user) {
+          storeFirebaseUser(user);
+          await syncFirebaseSession(user);
+        } else if (!localStorage.getItem("firebase_user")) {
+          state.user = null;
+          state.token = "";
+          localStorage.removeItem("isdk_aime_token");
+        }
+      } catch (error) {
+        console.warn("Firebase session sync failed:", error);
+      } finally {
+        updateAccountButton();
+        if (!resolved) {
+          resolved = true;
+          resolve(user);
+        }
+      }
+    });
+  });
+  return firebaseAuthReady;
+}
 
 function closeModal() {
   modalRoot.innerHTML = "";
@@ -3317,27 +3544,21 @@ function bindAuthModal() {
     event.preventDefault();
     message.textContent = "Working...";
     const formData = new FormData(form);
-    const payload = {
-      username: formData.get("username"),
-      password: formData.get("password")
-    };
+    const email = String(formData.get("username") || "").trim();
+    const password = String(formData.get("password") || "");
 
     try {
-      const data = await api.post(`/api/auth/${state.authMode}`, payload);
-      state.token = data.token;
-      state.user = data.user || {};
-      localStorage.setItem("isdk_aime_token", data.token);
-      await loadUserState();
+      if (state.authMode === "register") {
+        await firebaseSignup(email, password);
+      } else {
+        await firebaseLogin(email, password);
+      }
       closeModal();
-     toast(
-  `Signed in as ${
-    state.user?.username || "Anime Fan"
-  }.`
-);
+      toast(`Signed in as ${displayNameFromUser()}.`);
       updateAccountButton();
       await route();
     } catch (error) {
-      message.textContent = error.message;
+      message.textContent = firebaseErrorMessage(error);
     }
   });
 }
@@ -3608,9 +3829,11 @@ function bindGlobalEvents() {
 async function init() {
   app.innerHTML = renderSkeletonShell();
   document.body.classList.add("auth-mode", "booting");
+  const firebaseReady = startFirebaseAuthListener();
   const genres = await api.get("/api/genres");
   state.genres = asArray(genres.genres);
   await loadAnime();
+  await firebaseReady;
   await loadUserState();
   normalizeRuntimeState();
   updateAccountButton();

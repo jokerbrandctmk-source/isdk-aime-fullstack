@@ -200,6 +200,10 @@ function sanitizeUser(user) {
   return {
     id: user.id,
     username: user.username,
+    email: user.email || "",
+    phoneNumber: user.phoneNumber || "",
+    displayName: user.displayName || "",
+    photoURL: user.photoURL || "",
     createdAt: user.createdAt
   };
 }
@@ -1210,6 +1214,58 @@ if (
   });
 
 }
+
+  if (req.method === "POST" && pathname === "/api/auth/firebase") {
+    const body = await readJsonBody(req);
+    const uid = String(body.uid || "").trim();
+    const email = String(body.email || "").trim();
+    const phoneNumber = String(body.phoneNumber || "").trim();
+    const displayName = String(body.displayName || "").trim();
+    const photoURL = String(body.photoURL || "").trim();
+    const username = email || phoneNumber || displayName || uid;
+
+    if (!uid || !username) {
+      return sendError(res, 400, "Firebase user is required.");
+    }
+
+    let user = db.users.find((item) => item.firebaseUid === uid);
+    if (!user && email) {
+      user = db.users.find((item) => String(item.email || item.username || "").toLowerCase() === email.toLowerCase());
+    }
+
+    if (!user) {
+      user = {
+        id: `usr_${crypto.randomUUID()}`,
+        firebaseUid: uid,
+        username,
+        email,
+        phoneNumber,
+        displayName,
+        photoURL,
+        passwordHash: "",
+        createdAt: new Date().toISOString()
+      };
+      db.users.push(user);
+    } else {
+      user.firebaseUid = uid;
+      user.username = user.username || username;
+      user.email = email || user.email || "";
+      user.phoneNumber = phoneNumber || user.phoneNumber || "";
+      user.displayName = displayName || user.displayName || "";
+      user.photoURL = photoURL || user.photoURL || "";
+    }
+
+    db.watchlists ||= {};
+    db.progress ||= {};
+    db.watchlists[user.id] ||= [];
+    db.progress[user.id] ||= {};
+    await writeDb(db);
+
+    return sendJson(res, 200, {
+      token: createToken(user),
+      user: sanitizeUser(user)
+    });
+  }
 
   if (req.method === "POST" && pathname === "/api/auth/register") {
     const body = await readJsonBody(req);

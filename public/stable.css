@@ -2278,3 +2278,121 @@ body.auth-mode {
     opacity: 0.9 !important;
   }
 }
+
+/* Firebase auth final layout: centered desktop card, mobile back button, full anime backdrop. */
+.auth-page.mobile-auth-screen {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: none !important;
+  min-height: 100dvh !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(1rem, 3vh, 2rem) !important;
+}
+
+.auth-page .auth-slideshow span {
+  position: fixed !important;
+  inset: 0 !important;
+  background-image: var(--auth-slide) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  opacity: 0 !important;
+  animation: authFade 18s linear infinite !important;
+  animation-delay: calc(var(--slide-index) * -3.6s) !important;
+}
+
+@keyframes authFade {
+  0%,
+  24% {
+    opacity: 0;
+  }
+
+  5%,
+  19% {
+    opacity: 1;
+  }
+}
+
+.auth-page .auth-card {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  margin: auto !important;
+  max-height: min(92dvh, 760px) !important;
+  overflow: auto !important;
+  scrollbar-width: thin !important;
+}
+
+.mobile-auth-back {
+  display: none !important;
+  position: fixed !important;
+  z-index: 5 !important;
+  top: max(0.85rem, env(safe-area-inset-top)) !important;
+  left: 0.85rem !important;
+  width: 2.55rem !important;
+  height: 2.55rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 999px !important;
+  background: rgba(0, 0, 0, 0.58) !important;
+  color: #fff !important;
+  font-size: 2rem !important;
+  line-height: 1 !important;
+}
+
+.google-auth-button {
+  min-height: 3.2rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  font: inherit !important;
+  font-weight: 900 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.7rem !important;
+  cursor: pointer !important;
+}
+
+.google-auth-button span {
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #fff !important;
+  color: #111 !important;
+  font-weight: 950 !important;
+}
+
+.firebase-recaptcha {
+  position: fixed !important;
+  inset: auto auto 0 0 !important;
+  z-index: -1 !important;
+  opacity: 0.01 !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 701px) {
+  .auth-page.mobile-auth-screen {
+    padding-inline: clamp(2rem, 8vw, 8rem) !important;
+  }
+
+  .auth-page .auth-card {
+    width: min(92vw, 480px) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .mobile-auth-back {
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .auth-page .auth-card {
+    margin-top: 3.2rem !important;
+    width: min(92vw, 23rem) !important;
+    max-height: calc(100dvh - 4.5rem) !important;
+  }
+}
