@@ -311,6 +311,53 @@ function findEpisode(db, episodeId) {
   return null;
 }
 
+function applyCloudStats(db, anime) {
+  const stats = db.cloudStats?.[anime.slug] || {};
+  return {
+    ...anime,
+    views: Number(stats.views ?? anime.views ?? 0),
+    likes: Number(stats.likes ?? anime.likes ?? 0),
+    likedBy: Array.isArray(stats.likedBy) ? stats.likedBy : (Array.isArray(anime.likedBy) ? anime.likedBy : [])
+  };
+}
+
+function ensureCloudStats(db, slug, anime = {}) {
+  db.cloudStats ||= {};
+  db.cloudStats[slug] ||= {
+    views: Number(anime.views || 0),
+    likes: Number(anime.likes || 0),
+    likedBy: Array.isArray(anime.likedBy) ? anime.likedBy : []
+  };
+  db.cloudStats[slug].likedBy = Array.isArray(db.cloudStats[slug].likedBy)
+    ? db.cloudStats[slug].likedBy
+    : [];
+  return db.cloudStats[slug];
+}
+
+async function findAnimeAny(db, slug) {
+  const local = findAnime(db, slug);
+  if (local) return applyCloudStats(db, local);
+  if (!hasSupabaseAnime()) return null;
+  const anime = (await readSupabaseAnime()).find((item) => item.slug === slug);
+  return anime ? applyCloudStats(db, anime) : null;
+}
+
+async function findEpisodeAny(db, episodeId) {
+  const local = findEpisode(db, episodeId);
+  if (local) {
+    return {
+      anime: applyCloudStats(db, local.anime),
+      episode: local.episode
+    };
+  }
+  if (!hasSupabaseAnime()) return null;
+  for (const anime of await readSupabaseAnime()) {
+    const episode = (anime.episodes || []).find((item) => item.id === episodeId);
+    if (episode) return { anime: applyCloudStats(db, anime), episode };
+  }
+  return null;
+}
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -950,7 +997,7 @@ anime = anime
       (right.popularity || 0) -
       (left.popularity || 0)
   )
-  .map(publicAnime);
+  .map((item) => publicAnime(applyCloudStats(db, item)));
 
     return sendJson(res, 200, { anime });
   }
@@ -1106,7 +1153,7 @@ if (
   }
 
   return sendJson(res, 200, {
-    anime: publicAnime(anime)
+    anime: publicAnime(applyCloudStats(db, anime))
   });
 
 }
@@ -1121,7 +1168,7 @@ if (
 ) {
 
   const anime =
-    findAnime(db, parts[2]);
+    await findAnimeAny(db, parts[2]);
 
   if (!anime) {
 
@@ -1133,13 +1180,13 @@ if (
 
   }
 
-  anime.views =
-    (anime.views || 0) + 1;
+  const stats = ensureCloudStats(db, anime.slug, anime);
+  stats.views = Number(stats.views || 0) + 1;
 
   await writeDb(db);
 
   return sendJson(res, 200, {
-    views: anime.views
+    views: stats.views
   });
 
 }
@@ -1152,29 +1199,29 @@ if (
   parts[2] &&
   parts[3] === "like"
 ) {
-  const anime = findAnime(db, parts[2]);
+  const anime = await findAnimeAny(db, parts[2]);
   if (!anime) {
     return sendError(res, 404, "Anime not found.");
   }
 
   const body = await readJsonBody(req);
   const clientId = cleanText(body.clientId, "guest", 120);
-  anime.likedBy = Array.isArray(anime.likedBy) ? anime.likedBy : [];
+  const stats = ensureCloudStats(db, anime.slug, anime);
 
-  const alreadyLiked = anime.likedBy.includes(clientId);
+  const alreadyLiked = stats.likedBy.includes(clientId);
   if (alreadyLiked) {
-    anime.likedBy = anime.likedBy.filter((id) => id !== clientId);
+    stats.likedBy = stats.likedBy.filter((id) => id !== clientId);
   } else {
-    anime.likedBy.push(clientId);
+    stats.likedBy.push(clientId);
   }
 
-  anime.likes = anime.likedBy.length;
+  stats.likes = stats.likedBy.length;
   await writeDb(db);
 
   return sendJson(res, 200, {
     liked: !alreadyLiked,
-    likes: anime.likes,
-    likedBy: anime.likedBy
+    likes: stats.likes,
+    likedBy: stats.likedBy
   });
 }
 
@@ -1386,12 +1433,16 @@ if (
 
     if (req.method === "GET") {
       const slugs = db.watchlists[user.id];
-      const anime = db.anime.filter((item) => slugs.includes(item.slug)).map(publicAnime);
+      const anime = [];
+      for (const slug of slugs) {
+        const item = await findAnimeAny(db, slug);
+        if (item) anime.push(publicAnime(item));
+      }
       return sendJson(res, 200, { slugs, anime });
     }
 
     const slug = parts[2];
-    const anime = slug ? findAnime(db, slug) : null;
+    const anime = slug ? await findAnimeAny(db, slug) : null;
     if (!anime) return sendError(res, 404, "Anime not found.");
 
     if (req.method === "POST") {
@@ -1419,7 +1470,7 @@ if (
     }
 
     if (req.method === "POST" && parts[2]) {
-      const match = findEpisode(db, parts[2]);
+      const match = await findEpisodeAny(db, parts[2]);
       if (!match) return sendError(res, 404, "Episode not found.");
       const body = await readJsonBody(req);
       const duration = Math.max(1, Number(body.duration || match.episode.duration));
@@ -1438,7 +1489,7 @@ if (
 
   if (parts[0] === "api" && parts[1] === "comments" && parts[2]) {
     const episodeId = parts[2];
-    if (!findEpisode(db, episodeId)) return sendError(res, 404, "Episode not found.");
+    if (!(await findEpisodeAny(db, episodeId))) return sendError(res, 404, "Episode not found.");
     db.comments[episodeId] ||= [];
 
     if (req.method === "GET") {

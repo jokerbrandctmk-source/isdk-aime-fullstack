@@ -2396,3 +2396,120 @@ body.auth-mode {
     max-height: calc(100dvh - 4.5rem) !important;
   }
 }
+
+/* 2026-06-09 final auth polish: Netflix-like poster backdrop, no inner card scrollbar. */
+body.auth-mode {
+  overflow-x: hidden !important;
+  background: #000 !important;
+}
+
+.auth-page.mobile-auth-screen {
+  min-height: 100dvh !important;
+  width: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(1rem, 3vh, 2rem) !important;
+  background: #000 !important;
+}
+
+.auth-page .auth-slideshow {
+  opacity: 1 !important;
+}
+
+.auth-page .auth-slideshow span {
+  filter: saturate(1.22) contrast(1.12) brightness(0.72) !important;
+}
+
+.auth-poster-wall {
+  inset: -18vh -12vw !important;
+  grid-template-columns: repeat(8, minmax(120px, 1fr)) !important;
+  gap: 0.8rem !important;
+  opacity: 0.82 !important;
+  transform: rotate(-8deg) scale(1.12) !important;
+  filter: saturate(1.28) contrast(1.12) brightness(0.82) !important;
+}
+
+.auth-page.mobile-auth-screen::before {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.46) 45%, rgba(0, 0, 0, 0.86) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.78) 100%) !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.28) 50%, rgba(0, 0, 0, 0.76)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.82)) !important;
+}
+
+.auth-page .auth-card {
+  width: min(92vw, 410px) !important;
+  max-width: 410px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  padding: clamp(1.35rem, 2.4vw, 1.75rem) !important;
+  background: rgba(0, 0, 0, 0.74) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.86) !important;
+}
+
+.auth-page .auth-card::-webkit-scrollbar {
+  display: none !important;
+}
+
+.auth-card h1 {
+  font-size: clamp(2.2rem, 4vw, 3.2rem) !important;
+  line-height: 1 !important;
+  margin-bottom: 1.4rem !important;
+}
+
+.auth-card label {
+  gap: 0.5rem !important;
+}
+
+.auth-card input {
+  min-height: 3.15rem !important;
+}
+
+.otp-row {
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, auto) !important;
+}
+
+.auth-card .primary-button,
+.google-auth-button,
+.auth-card .text-switch {
+  min-height: 3rem !important;
+}
+
+.player.video-load-error::after {
+  content: "Video URL load nahi hui. Bunny/Cloudinary link check karo." !important;
+  inset: auto 1rem 1rem 1rem !important;
+  min-height: 3.2rem !important;
+  border-radius: 999px !important;
+  background: rgba(0, 0, 0, 0.72) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+@media (min-width: 701px) {
+  .auth-page.mobile-auth-screen {
+    padding: 2rem !important;
+  }
+
+  .mobile-auth-back {
+    display: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .auth-poster-wall {
+    inset: -9vh -40vw !important;
+    grid-template-columns: repeat(5, minmax(90px, 1fr)) !important;
+    opacity: 0.9 !important;
+  }
+
+  .auth-page .auth-card {
+    width: min(92vw, 22.5rem) !important;
+    margin-top: 3rem !important;
+    padding: 1.15rem !important;
+  }
+}

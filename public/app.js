@@ -675,8 +675,14 @@ function filterLocalAnime(path) {
 function isValidApiPayload(path, data) {
   if (!data || typeof data !== "object") return false;
   if (path.startsWith("/api/genres")) return Array.isArray(data.genres);
-  if (path === "/api/anime" || path.startsWith("/api/anime?")) return Array.isArray(data.anime);
+  if (path === "/api/anime") return Array.isArray(data.anime) || Boolean(data.anime);
+  if (path.startsWith("/api/anime?")) return Array.isArray(data.anime);
+  if (path.startsWith("/api/anime/") && path.endsWith("/view")) return Number.isFinite(Number(data.views));
+  if (path.startsWith("/api/anime/") && path.endsWith("/like")) return Number.isFinite(Number(data.likes));
   if (path.startsWith("/api/anime/")) return Boolean(data.anime);
+  if (path.startsWith("/api/comments/")) return Array.isArray(data.comments);
+  if (path.startsWith("/api/watchlist")) return Array.isArray(data.slugs);
+  if (path.startsWith("/api/progress")) return Boolean(data.progress);
   return true;
 }
 
@@ -899,7 +905,8 @@ const api = {
       }
       if (!isValidApiPayload(path, data)) {
         if (getApiBaseUrl()) {
-          throw new Error("Server data format is not valid.");
+          console.warn("Unexpected API payload, using it anyway:", path, data);
+          return data || {};
         }
         return localApi(path, options);
       }
