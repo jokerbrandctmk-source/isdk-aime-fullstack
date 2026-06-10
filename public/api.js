@@ -1,5 +1,5 @@
 const SUPABASE_URL =
-  "https://twd1pukkgdkviwxywbkl.supabase.co";
+  "https://twdlpukkgdkviwxywbkl.supabase.co";
 
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGxwdWtrZ2Rrdml3eHl3YmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTc0ODIsImV4cCI6MjA5NTEzMzQ4Mn0.yFHt4zm-Li-373miMb8kslPvBNgedRLkeCTRSymPzxM";
