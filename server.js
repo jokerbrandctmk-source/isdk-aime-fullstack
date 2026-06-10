@@ -1630,6 +1630,25 @@ if (
 
   return sendError(res, 404, "API route not found.");
 }
+async function supabaseRequest(path, options = {}) {
+
+  const response = await fetch(
+    `${process.env.SUPABASE_URL}/rest/v1/${path}`,
+    {
+      ...options,
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  return data;
+}
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
