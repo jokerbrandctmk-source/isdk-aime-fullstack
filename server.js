@@ -1025,21 +1025,69 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true, name: "ISKD Anime API" });
   }
 
-  if (req.method === "GET" && pathname === "/api/genres") {
-    if (hasSupabaseAnime()) {
-      try {
-        const anime = await readSupabaseAnime();
-        const genres = Array.from(new Set(anime.flatMap((item) => item.genres || []))).sort();
-        return sendJson(res, 200, { genres });
-      } catch (error) {
-        return sendError(res, 502, `Supabase genres failed: ${error.message}`);
+  if (
+  req.method === "GET" &&
+  pathname === "/api/genres"
+) {
+
+  try {
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/anime?select=genre`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
       }
+    );
+
+    if (!response.ok) {
+
+      const err =
+        await response.text();
+
+      console.error(err);
+
+      return sendError(
+        res,
+        500,
+        err
+      );
     }
 
-    const genres = Array.from(new Set(db.anime.flatMap((anime) => anime.genres))).sort();
-    return sendJson(res, 200, { genres });
-  }
+    const data =
+      await response.json();
 
+    const genres =
+      [...new Set(
+
+        data
+          .map(x => x.genre)
+          .filter(Boolean)
+
+      )];
+
+    return sendJson(
+      res,
+      200,
+      genres
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Genres API Error:",
+      error
+    );
+
+    return sendError(
+      res,
+      500,
+      error.message
+    );
+  }
+}
   if (req.method === "GET" && pathname === "/api/anime") {
     const search = (url.searchParams.get("search") || "").trim().toLowerCase();
     const genre = (url.searchParams.get("genre") || "All").trim();
