@@ -524,24 +524,36 @@ function hasSupabaseAnime() {
 }
 
 async function supabaseRequest(pathname, options = {}) {
-  if (!hasSupabaseAnime()) {
-    throw new Error("Supabase is not configured.");
+
+  if (!SUPABASE_URL) {
+    throw new Error("SUPABASE_URL missing");
   }
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${pathname}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {})
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/${pathname}`,
+    {
+      method: options.method || "GET",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      },
+      body: options.body || undefined
     }
-  });
+  );
+
   const text = await response.text();
+
   const data = text ? JSON.parse(text) : null;
 
   if (!response.ok) {
-    const message = data?.message || data?.error || "Supabase request failed.";
+
+    const message =
+      data?.message ||
+      data?.error ||
+      "Supabase request failed.";
+
     throw new Error(message);
   }
 
