@@ -733,22 +733,112 @@ async function localApi(path, options = {}) {
     return { views: anime.views };
   }
 
-  if (method === "POST" && path.startsWith("/api/anime/") && path.endsWith("/like")) {
-    const slug = path.split("/")[3];
-    const anime = (db.anime || []).find((item) => item.slug === slug);
-    if (!anime) throw new Error("Anime not found.");
-    const body = JSON.parse(options.body || "{}");
-    const clientId = body.clientId || getClientId();
-    anime.likedBy = Array.isArray(anime.likedBy) ? anime.likedBy : [];
-    const liked = !anime.likedBy.includes(clientId);
-    anime.likedBy = liked
-      ? [...anime.likedBy, clientId]
-      : anime.likedBy.filter((id) => id !== clientId);
-    anime.likes = anime.likedBy.length;
-    writeLocalDb(db);
-    return { liked, likes: anime.likes, likedBy: anime.likedBy };
+  if (
+  method === "POST" &&
+  path.startsWith("/api/anime/") &&
+  path.endsWith("/like")
+) {
+
+  const slug = path.split("/")[3];
+
+  const anime =
+    (db.anime || []).find(
+      (item) => item.slug === slug
+    );
+
+  if (!anime)
+    throw new Error("Anime not found.");
+
+  const body =
+    JSON.parse(options.body || "{}");
+
+  const clientId =
+    body.clientId || getClientId();
+
+  // likes table create
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/likes?anime_id=eq.${anime.id}&user_id=eq.${clientId}`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  );
+
+  const existing =
+    await response.json();
+
+  let liked = false;
+
+  // unlike
+  if (existing.length > 0) {
+
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/likes?anime_id=eq.${anime.id}&user_id=eq.${clientId}`,
+      {
+        method: "DELETE",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+
+    liked = false;
+
+  } else {
+
+    // like add
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/likes`,
+      {
+        method: "POST",
+
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          anime_id: anime.id,
+          user_id: clientId
+        })
+      }
+    );
+
+    liked = true;
   }
 
+  // total likes count
+  const countRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/likes?anime_id=eq.${anime.id}&select=*`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  );
+
+  const likesData =
+    await countRes.json();
+
+  anime.likes =
+    likesData.length;
+
+  anime.likedBy =
+    likesData.map(x => x.user_id);
+
+  writeLocalDb(db);
+
+  return {
+    liked,
+    likes: anime.likes,
+    likedBy: anime.likedBy
+  };
+}
   if (method === "POST" && path === "/api/anime") {
     const body = JSON.parse(options.body || "{}");
     const baseSlug = slugify(body.title);
