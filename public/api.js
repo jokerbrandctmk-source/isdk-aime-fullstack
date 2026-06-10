@@ -1,26 +1,37 @@
-
-
 const SUPABASE_URL =
-  "https://twdlpukkgdkviwxywbkl.supabase.co";
+  "https://twd1pukkgdkviwxywbkl.supabase.co";
 
 const SUPABASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGxwdWtrZ2Rrdml3eHl3YmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTc0ODIsImV4cCI6MjA5NTEzMzQ4Mn0.yFHt4zm-Li-373miMb8kslPvBNgedRLkeCTRSymPzxM";
 
+
+
+// =========================
+// FETCH ANIME
+// =========================
+
 export async function fetchAnime() {
+
   try {
+
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/anime?select=*`,
       {
         headers: {
           apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
       }
     );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
 
     const data = await response.json();
 
     return data.map((anime) => ({
+
       id: anime.id,
 
       slug: anime.title
@@ -31,9 +42,9 @@ export async function fetchAnime() {
 
       japaneseTitle: anime.title,
 
-      tagline: anime.genre,
+      tagline: anime.genre || "Anime",
 
-      synopsis: anime.description,
+      synopsis: anime.description || "",
 
       type: "Movie",
 
@@ -43,21 +54,20 @@ export async function fetchAnime() {
 
       rating: Number(anime.rating || 4.5),
 
-      genres: [anime.genre || "Action"],
+      genres: [
+        anime.genre || "Action"
+      ],
 
       poster:
         anime.poster ||
-
         "https://res.cloudinary.com/dapefcqud/image/upload/v1/default-anime.jpg",
 
       backdrop:
         anime.poster ||
-
         "https://res.cloudinary.com/dapefcqud/image/upload/v1/default-anime.jpg",
 
       logo:
         anime.poster ||
-
         "https://res.cloudinary.com/dapefcqud/image/upload/v1/default-anime.jpg",
 
       views: 0,
@@ -78,59 +88,121 @@ export async function fetchAnime() {
 
           thumbnail: anime.poster,
 
-          video: anime.video,
-        },
-      ],
+          video: anime.video
+        }
+      ]
+
     }));
+
   } catch (error) {
-    console.error("Supabase Fetch Error:", error);
+
+    console.error(
+      "Supabase Fetch Error:",
+      error
+    );
 
     return [];
   }
 }
+
+
+
+// =========================
+// ADD COMMENT
+// =========================
+
 export async function addComment(
   animeId,
   username,
   comment
 ) {
 
-  await fetch(
-    `${SUPABASE_URL}/rest/v1/comments`,
-    {
-      method: "POST",
+  try {
 
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/comments`,
+      {
+        method: "POST",
 
-      body: JSON.stringify({
-        anime_id: animeId,
-        username,
-        comment
-      })
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+
+        body: JSON.stringify({
+          anime_id: animeId,
+          username,
+          comment
+        })
+      }
+    );
+
+    if (!response.ok) {
+
+      const err =
+        await response.text();
+
+      console.error(err);
+
+      throw new Error(err);
     }
-  );
+
+  } catch (error) {
+
+    console.error(
+      "Add Comment Error:",
+      error
+    );
+  }
 }
+
+
+
+// =========================
+// FETCH COMMENTS
+// =========================
 
 export async function fetchComments(
   animeId
 ) {
 
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/comments?anime_id=eq.${animeId}&select=*`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`
-      }
-    }
-  );
+  try {
 
-  return await response.json();
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/comments?anime_id=eq.${animeId}&select=*`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    return await response.json();
+
+  } catch (error) {
+
+    console.error(
+      "Fetch Comments Error:",
+      error
+    );
+
+    return [];
+  }
 }
+
+
+
+// =========================
+// LOAD COMMENTS UI
+// =========================
+
 const commentForm =
   document.querySelector("#commentForm");
 
@@ -140,14 +212,22 @@ const commentInput =
 const commentsContainer =
   document.querySelector("#commentsContainer");
 
-async function loadComments(animeId) {
+const CURRENT_ANIME_ID =
+  "global-anime";
+
+
+
+async function loadComments(
+  animeId
+) {
 
   const comments =
     await fetchComments(animeId);
-if (!commentsContainer) return;
 
-commentsContainer.innerHTML =
-    comments.map(comment => `
+  if (!commentsContainer) return;
+
+  commentsContainer.innerHTML =
+    (comments || []).map(comment => `
 
       <div class="comment-card">
 
@@ -159,7 +239,12 @@ commentsContainer.innerHTML =
 
     `).join("");
 }
-const CURRENT_ANIME_ID = "global-anime";
+
+
+
+// =========================
+// COMMENT SUBMIT
+// =========================
 
 commentForm?.addEventListener(
   "submit",
@@ -176,15 +261,26 @@ commentForm?.addEventListener(
 
     if (!comment) return;
 
-   await addComment(
-  CURRENT_ANIME_ID,
-  username,
-  comment
-);
+    await addComment(
+      CURRENT_ANIME_ID,
+      username,
+      comment
+    );
 
     commentInput.value = "";
 
-   await loadComments(CURRENT_ANIME_ID);
+    await loadComments(
+      CURRENT_ANIME_ID
+    );
   }
 );
-loadComments(CURRENT_ANIME_ID);
+
+
+
+// =========================
+// INITIAL LOAD
+// =========================
+
+loadComments(
+  CURRENT_ANIME_ID
+);
