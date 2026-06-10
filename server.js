@@ -78,6 +78,91 @@ function sendError(res, status, message) {
   sendJson(res, status, { error: message });
 }
 
+function hlsProxyHeaders(contentType = "application/octet-stream") {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Range, Content-Type",
+    "Cache-Control": "public, max-age=60",
+    "Content-Type": contentType
+  };
+}
+
+function proxiedHlsLine(baseUrl, value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed || trimmed.startsWith("#")) return value;
+  try {
+    const absolute = new URL(trimmed, baseUrl).toString();
+    return `/api/hls-proxy?url=${encodeURIComponent(absolute)}`;
+  } catch {
+    return value;
+  }
+}
+
+function rewriteHlsManifest(baseUrl, text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => {
+      if (line.startsWith("#EXT-X-KEY") && line.includes("URI=")) {
+        return line.replace(/URI="([^"]+)"/, (_, uri) => {
+          try {
+            const absolute = new URL(uri, baseUrl).toString();
+            return `URI="/api/hls-proxy?url=${encodeURIComponent(absolute)}"`;
+          } catch {
+            return `URI="${uri}"`;
+          }
+        });
+      }
+      return proxiedHlsLine(baseUrl, line);
+    })
+    .join("\n");
+}
+
+async function proxyHls(req, res, url) {
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, hlsProxyHeaders());
+    res.end();
+    return;
+  }
+
+  const target = String(url.searchParams.get("url") || "").trim();
+  let targetUrl;
+  try {
+    targetUrl = new URL(target);
+  } catch {
+    return sendError(res, 400, "Invalid HLS URL.");
+  }
+
+  if (!["http:", "https:"].includes(targetUrl.protocol)) {
+    return sendError(res, 400, "Only http/https video URLs are allowed.");
+  }
+
+  const headers = {};
+  if (req.headers.range) headers.Range = req.headers.range;
+  const upstream = await fetch(targetUrl, { headers });
+  const upstreamType = upstream.headers.get("content-type") || "";
+  const isManifest = /\.m3u8(\?|#|$)/i.test(targetUrl.pathname) || upstreamType.includes("mpegurl");
+
+  if (!upstream.ok) {
+    return sendError(res, upstream.status, `Video proxy failed: ${upstream.status}`);
+  }
+
+  if (isManifest) {
+    const manifest = rewriteHlsManifest(targetUrl.toString(), await upstream.text());
+    send(res, 200, manifest, hlsProxyHeaders("application/vnd.apple.mpegurl; charset=utf-8"));
+    return;
+  }
+
+  const body = Buffer.from(await upstream.arrayBuffer());
+  res.writeHead(upstream.status, {
+    ...hlsProxyHeaders(upstreamType || "application/octet-stream"),
+    "Accept-Ranges": upstream.headers.get("accept-ranges") || "bytes",
+    "Content-Length": body.length,
+    ...(upstream.headers.get("content-range") ? { "Content-Range": upstream.headers.get("content-range") } : {})
+  });
+  res.end(body);
+}
+
 async function sendFile(req, res, filePath, extension, cacheControl = "no-store") {
   const contentType = MIME_TYPES[extension] || "application/octet-stream";
   const stat = await fs.stat(filePath);
@@ -1199,29 +1284,56 @@ if (
   parts[2] &&
   parts[3] === "like"
 ) {
-  const anime = await findAnimeAny(db, parts[2]);
-  if (!anime) {
-    return sendError(res, 404, "Anime not found.");
-  }
+
+  const animeSlug = parts[2];
 
   const body = await readJsonBody(req);
-  const clientId = cleanText(body.clientId, "guest", 120);
-  const stats = ensureCloudStats(db, anime.slug, anime);
 
-  const alreadyLiked = stats.likedBy.includes(clientId);
-  if (alreadyLiked) {
-    stats.likedBy = stats.likedBy.filter((id) => id !== clientId);
+  const clientId = cleanText(body.clientId, "guest", 120);
+
+  const existing = await supabaseRequest(
+    `likes?anime_id=eq.${animeSlug}&user_id=eq.${clientId}`
+  );
+
+  let liked = false;
+
+  if (existing.length > 0) {
+
+    await supabaseRequest(
+      `likes?anime_id=eq.${animeSlug}&user_id=eq.${clientId}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    liked = false;
+
   } else {
-    stats.likedBy.push(clientId);
+
+    await supabaseRequest("likes", {
+      method: "POST",
+      headers: {
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify([
+        {
+          anime_id: animeSlug,
+          user_id: clientId
+        }
+      ])
+    });
+
+    liked = true;
   }
 
-  stats.likes = stats.likedBy.length;
-  await writeDb(db);
+  const allLikes = await supabaseRequest(
+    `likes?anime_id=eq.${animeSlug}`
+  );
 
   return sendJson(res, 200, {
-    liked: !alreadyLiked,
-    likes: stats.likes,
-    likedBy: stats.likedBy
+    liked,
+    likes: allLikes.length,
+    likedBy: allLikes.map((x) => x.user_id)
   });
 }
 
@@ -1523,6 +1635,11 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
 
   try {
+    if (url.pathname === "/api/hls-proxy") {
+      await proxyHls(req, res, url);
+      return;
+    }
+
     if (url.pathname.startsWith("/api/")) {
       await handleApi(req, res, url);
       return;

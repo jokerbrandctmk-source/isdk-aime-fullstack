@@ -447,6 +447,13 @@ function isHlsUrl(value) {
   return /\.m3u8(\?|#|$)/i.test(String(value || ""));
 }
 
+function proxiedHlsUrl(value) {
+  const source = String(value || "").trim();
+  if (source.includes("/api/hls-proxy?")) return source;
+  if (!source || !isHlsUrl(source) || !/^https?:\/\//i.test(source)) return source;
+  return apiUrl(`/api/hls-proxy?url=${encodeURIComponent(source)}`);
+}
+
 function youtubeEmbedUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -526,7 +533,7 @@ async function hlsManifestQualities(sourceUrl) {
 async function populateHlsQualitySelect(sourceUrl) {
   const select = document.querySelector("#qualitySelect");
   if (!select) return;
-  const variants = await hlsManifestQualities(sourceUrl);
+  const variants = await hlsManifestQualities(proxiedHlsUrl(sourceUrl));
   if (!variants.length) return;
   window.__iskdHlsVariants = variants;
   select.dataset.mode = "manual-hls";
@@ -556,10 +563,11 @@ async function setupVideoSource(video, source) {
   if (!video || !source) return;
   const sourceUrl = assetUrl(source, "");
   if (!sourceUrl) return;
+  const playbackUrl = proxiedHlsUrl(sourceUrl);
 
   window.__iskdHls?.destroy?.();
   window.__iskdHls = null;
-  video.src = sourceUrl;
+  video.src = playbackUrl;
 
   if (!isHlsUrl(sourceUrl)) {
     return;
@@ -583,7 +591,7 @@ async function setupVideoSource(video, source) {
       lowLatencyMode: true,
       maxBufferLength: 30
     });
-    hls.loadSource(sourceUrl);
+    hls.loadSource(playbackUrl);
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       const select = document.querySelector("#qualitySelect");

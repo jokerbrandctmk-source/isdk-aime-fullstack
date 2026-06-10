@@ -327,6 +327,12 @@
       "username": "codextest0524",
       "passwordHash": "c1fb4891109bc7b62b5a3234108b00f4:af1cd3b1f8ae5b1bf063ebe6c83970b05589d48d15cf499f8a4d40821fcaa89fcb3fc546ff7b3d7790aa0de677996941fed67ad8b842c7fea2bb7dcec82e339d",
       "createdAt": "2026-05-24T03:26:20.852Z"
+    },
+    {
+      "id": "usr_fc098a68-9645-4a18-977d-bf44546b6b46",
+      "username": "codextest@iskd.app",
+      "passwordHash": "0802aa1017cdc199343406743bb33f18:b51726bcfee082fb4dcb719c568a79ddcf8608abc4997ce7d09cb5e856bb4cc859c26a1748244f1c4ea5a8da913a7039607a168fa48c2bf847fc5f11ebd19125",
+      "createdAt": "2026-06-01T01:52:12.482Z"
     }
   ],
   "watchlists": {
@@ -334,7 +340,8 @@
       "aster-guardians",
       "moonlit-bento"
     ],
-    "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42": []
+    "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42": [],
+    "usr_fc098a68-9645-4a18-977d-bf44546b6b46": []
   },
   "progress": {
     "usr_4f54d742-4579-4a59-b1f5-0446fddf4e7c": {
@@ -360,7 +367,8 @@
         "updatedAt": "2026-05-16T06:17:25.458Z"
       }
     },
-    "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42": {}
+    "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42": {},
+    "usr_fc098a68-9645-4a18-977d-bf44546b6b46": {}
   },
   "comments": {
     "neon-ronin-01": [
