@@ -1311,7 +1311,9 @@ if (
   parts[1] === "anime" &&
   parts[2]
 ) {
-
+ console.log("PARTS:", parts);
+  console.log("SLUG:", parts[2]);
+  console.log("FOUND:", findAnime(db, parts[2]));
    let anime;
 
   anime = findAnime(db, parts[2]);
