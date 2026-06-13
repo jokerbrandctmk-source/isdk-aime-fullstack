@@ -1,3 +1,8 @@
+const SUPABASE_URL =
+  window.ISKD_CONFIG?.supabaseUrl || "https://twdlpukkgdkviwxywbkl.supabase.co";
+
+const SUPABASE_KEY =
+  window.ISKD_CONFIG?.supabaseAnonKey || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGxwdWtrZ2Rrdml3eHl3YmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTc0ODIsImV4cCI6MjA5NTEzMzQ4Mn0.yFHt4zm-Li-373miMb8kslPvBNgedRLkeCTRSymPzxM";
 import {
   auth,
   provider,
@@ -114,8 +119,7 @@ function isAbsoluteAsset(value) {
 function isPlaceholderAsset(value) {
   const source = String(value || "");
   return /res\.cloudinary\.com\/x{3,}\//i.test(source) ||
-    /\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(source) ||
-    /\/media\/(?:posters|backdrops)\/supabase-[^/?#]+\.svg(?:\?|#|$)?/i.test(source);
+    /\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(source);
 }
 
 function assetUrl(value, fallback = "/assets/anime/ff-image.jpg") {

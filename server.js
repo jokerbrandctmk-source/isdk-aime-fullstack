@@ -363,11 +363,8 @@ function safePublicAsset(assetPath, fallback) {
 }
 
 function publicAnime(anime) {
-  const defaultPoster = "/assets/anime/poster.png";
-  const defaultBackdrop = "/assets/anime/backdrop.png";
-  const isSupabaseAnime = Boolean(anime.supabaseId || String(anime.slug || "").startsWith("supabase-"));
-  const generatedPoster = isSupabaseAnime ? defaultPoster : `/media/posters/${anime.slug}.svg`;
-  const generatedBackdrop = isSupabaseAnime ? defaultBackdrop : `/media/backdrops/${anime.slug}.svg`;
+  const generatedPoster = `/media/posters/${anime.slug}.svg`;
+  const generatedBackdrop = `/media/backdrops/${anime.slug}.svg`;
   const poster = safePublicAsset(anime.poster, generatedPoster);
   const backdrop = safePublicAsset(
     anime.backdrop,
@@ -577,7 +574,7 @@ function supabaseRowToAnime(row) {
   const synopsis = cleanText(row.description, "No description added yet.", 900);
   const genres = cleanList(row.genre, ["Action"]);
   const slug = supabaseAnimeSlug(row);
-  const poster = cleanAssetPath(row.poster) || "/assets/anime/poster.png";
+  const poster = cleanAssetPath(row.poster);
   const video = cleanAssetPath(row.video);
   const createdAt = row.created_at || new Date().toISOString();
 
@@ -606,8 +603,7 @@ function supabaseRowToAnime(row) {
     likedBy: [],
     accent: "#ff6518",
     secondary: "#16d8cb",
-    poster,
-    backdrop: poster,
+    ...(poster ? { poster, backdrop: poster } : {}),
     createdAt,
     episodes: [
       {
@@ -896,9 +892,11 @@ async function serveMedia(req, res, pathname) {
   const [, , kind, filename] = pathname.split("/");
   const slug = filename ? filename.replace(/\.svg$/i, "") : "";
   const db = await readDb();
-  const anime = findAnime(db, slug);
+  const anime = filename?.endsWith(".svg") && (kind === "posters" || kind === "backdrops")
+    ? await findAnimeAny(db, slug)
+    : null;
 
-  if (!anime || !filename.endsWith(".svg")) {
+  if (!anime) {
     sendError(res, 404, "Media not found.");
     return true;
   }
@@ -1101,17 +1099,30 @@ async function handleApi(req, res, url) {
     const genre = (url.searchParams.get("genre") || "All").trim();
     const type = (url.searchParams.get("type") || "All").trim();
 
-    let anime;
+   let anime;
 
-    if (hasSupabaseAnime()) {
-      try {
-        anime = await readSupabaseAnime();
-      } catch (error) {
-        return sendError(res, 502, `Supabase anime failed: ${error.message}`);
-      }
-    } else {
-      anime = db.anime;
-    }
+try {
+
+  const dbAnime = Array.isArray(db.anime)
+    ? db.anime
+    : [];
+
+  const supabaseAnime = hasSupabaseAnime()
+    ? await readSupabaseAnime()
+    : [];
+
+  anime = [
+    ...dbAnime,
+    ...supabaseAnime
+  ];
+
+} catch (error) {
+
+  console.error(error);
+
+  anime = db.anime || [];
+
+}
 
     if (search) {
       anime = anime.filter((item) => {
