@@ -1111,10 +1111,28 @@ try {
     ? await readSupabaseAnime()
     : [];
 
+  console.log("DB Anime:", dbAnime.length);
+  console.log("Supabase Anime:", supabaseAnime.length);
+
+  console.log(
+    "DB Titles:",
+    dbAnime.map(x => x.title)
+  );
+
+  console.log(
+    "Supabase Titles:",
+    supabaseAnime.map(x => x.title)
+  );
+
   anime = [
     ...dbAnime,
     ...supabaseAnime
   ];
+
+  console.log(
+    "Merged Anime:",
+    anime.length
+  );
 
 } catch (error) {
 
