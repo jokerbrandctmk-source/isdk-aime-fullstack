@@ -363,11 +363,15 @@ function safePublicAsset(assetPath, fallback) {
 }
 
 function publicAnime(anime) {
-  const generatedPoster = `/media/posters/${anime.slug}.svg`;
+  const defaultPoster = "/assets/anime/poster.png";
+  const defaultBackdrop = "/assets/anime/backdrop.png";
+  const isSupabaseAnime = Boolean(anime.supabaseId || String(anime.slug || "").startsWith("supabase-"));
+  const generatedPoster = isSupabaseAnime ? defaultPoster : `/media/posters/${anime.slug}.svg`;
+  const generatedBackdrop = isSupabaseAnime ? defaultBackdrop : `/media/backdrops/${anime.slug}.svg`;
   const poster = safePublicAsset(anime.poster, generatedPoster);
   const backdrop = safePublicAsset(
     anime.backdrop,
-    poster || `/media/backdrops/${anime.slug}.svg`
+    poster || generatedBackdrop
   );
 
   return {

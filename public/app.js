@@ -114,7 +114,8 @@ function isAbsoluteAsset(value) {
 function isPlaceholderAsset(value) {
   const source = String(value || "");
   return /res\.cloudinary\.com\/x{3,}\//i.test(source) ||
-    /\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(source);
+    /\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(source) ||
+    /\/media\/(?:posters|backdrops)\/supabase-[^/?#]+\.svg(?:\?|#|$)?/i.test(source);
 }
 
 function assetUrl(value, fallback = "/assets/anime/ff-image.jpg") {
