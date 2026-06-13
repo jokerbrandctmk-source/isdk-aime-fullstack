@@ -137,8 +137,19 @@ async function proxyHls(req, res, url) {
     return sendError(res, 400, "Only http/https video URLs are allowed.");
   }
 
-  const headers = {};
+ const headers = {
+  "User-Agent": "Mozilla/5.0",
+  "Accept": "*/*"
+};
   if (req.headers.range) headers.Range = req.headers.range;
+  console.log(
+  "HLS URL:",
+  targetUrl.toString()
+);
+console.log(
+  "Upstream Status:",
+  upstream.status
+);
   const upstream = await fetch(targetUrl, { headers });
   const upstreamType = upstream.headers.get("content-type") || "";
   const isManifest = /\.m3u8(\?|#|$)/i.test(targetUrl.pathname) || upstreamType.includes("mpegurl");
