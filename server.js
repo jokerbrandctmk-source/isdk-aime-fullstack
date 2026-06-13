@@ -1312,32 +1312,27 @@ if (
   parts[2]
 ) {
 
-  let anime;
+   let anime;
 
-  if (hasSupabaseAnime()) {
+  anime = findAnime(db, parts[2]);
+
+  if (!anime && hasSupabaseAnime()) {
     try {
-      anime = (await readSupabaseAnime()).find((item) => item.slug === parts[2]);
+      anime = (await readSupabaseAnime()).find(
+        item => item.slug === parts[2]
+      );
     } catch (error) {
-      return sendError(res, 502, `Supabase anime failed: ${error.message}`);
+      console.error(error);
     }
-  } else {
-    anime = findAnime(db, parts[2]);
   }
 
   if (!anime) {
-
-    return sendError(
-      res,
-      404,
-      "Anime not found."
-    );
-
+    return sendError(res, 404, "Anime not found.");
   }
 
   return sendJson(res, 200, {
     anime: publicAnime(applyCloudStats(db, anime))
   });
-
 }
 
 // VIEW COUNT
