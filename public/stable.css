@@ -2513,3 +2513,201 @@ body.auth-mode {
     padding: 1.15rem !important;
   }
 }
+
+/* 2026-06-13 auth final: visible anime wall, true centered card, no inner scrollbar. */
+body.auth-mode {
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+.auth-page.mobile-auth-screen {
+  position: relative !important;
+  min-height: 100dvh !important;
+  width: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(1.25rem, 4vh, 2.25rem) !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.52) 48%, rgba(0, 0, 0, 0.88) 100%),
+    url("/assets/anime/backdrop.png") center / cover no-repeat !important;
+}
+
+.auth-page .auth-slideshow {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  display: block !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+.auth-page .auth-slideshow span {
+  position: absolute !important;
+  inset: -3vh -3vw !important;
+  background-image: var(--auth-slide) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  opacity: 0 !important;
+  filter: saturate(1.35) contrast(1.12) brightness(0.88) !important;
+  transform: scale(1.08) !important;
+  animation: iskdAuthPosterDrift 42s ease-in-out infinite !important;
+  animation-delay: calc(var(--slide-index, 0) * 4.2s) !important;
+}
+
+.auth-page.mobile-auth-screen::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.34) 45%, rgba(0, 0, 0, 0.78)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.8)) !important;
+  pointer-events: none !important;
+}
+
+.auth-page.mobile-auth-screen::after {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255, 99, 28, 0.18), transparent 27rem),
+    radial-gradient(circle at 78% 18%, rgba(26, 221, 210, 0.13), transparent 24rem) !important;
+  pointer-events: none !important;
+}
+
+.auth-page .auth-cinema-panel {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.auth-page .auth-poster-wall {
+  position: absolute !important;
+  inset: -16vh -12vw !important;
+  display: grid !important;
+  grid-template-columns: repeat(9, minmax(120px, 1fr)) !important;
+  gap: 0.75rem !important;
+  opacity: 0.72 !important;
+  transform: rotate(-8deg) scale(1.08) !important;
+  filter: saturate(1.22) contrast(1.08) brightness(0.76) !important;
+}
+
+.auth-page .auth-poster-wall img {
+  width: 100% !important;
+  aspect-ratio: 2 / 3 !important;
+  object-fit: cover !important;
+  border-radius: 0.5rem !important;
+}
+
+.auth-page .auth-brand-copy {
+  display: none !important;
+}
+
+.auth-page .auth-card {
+  position: relative !important;
+  z-index: 3 !important;
+  align-self: center !important;
+  justify-self: center !important;
+  width: min(92vw, 430px) !important;
+  max-width: 430px !important;
+  max-height: none !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: clamp(1.5rem, 2.5vw, 2.2rem) !important;
+  overflow: visible !important;
+  scrollbar-width: none !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.88)) !important;
+  box-shadow: 0 34px 110px rgba(0, 0, 0, 0.92), 0 0 60px rgba(255, 90, 24, 0.12) !important;
+}
+
+.auth-page .auth-card::-webkit-scrollbar {
+  display: none !important;
+}
+
+.auth-page .auth-welcome {
+  color: #f6d66b !important;
+  font-size: clamp(0.95rem, 1.35vw, 1.18rem) !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0.12em !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  margin: 0 0 1rem !important;
+}
+
+.auth-page .auth-card h1 {
+  text-align: center !important;
+  font-size: clamp(2.3rem, 4.2vw, 3.4rem) !important;
+  line-height: 0.95 !important;
+  margin: 0 0 1.7rem !important;
+}
+
+.auth-page .auth-card label {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.auth-page .auth-card input {
+  width: 100% !important;
+  min-height: 3.25rem !important;
+  border: 0 !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.48) !important;
+  border-radius: 0.2rem 0.2rem 0 0 !important;
+  background: #1c2534 !important;
+}
+
+.auth-page .auth-card .primary-button {
+  background: linear-gradient(90deg, #ff5b1a, #e4252a) !important;
+  color: #fff !important;
+  box-shadow: 0 18px 34px rgba(255, 82, 26, 0.22) !important;
+}
+
+.auth-page .google-auth-button,
+.auth-page .auth-card .text-switch {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+@media (min-width: 701px) {
+  .auth-page.mobile-auth-screen {
+    padding: 2rem !important;
+  }
+
+  .auth-page .mobile-auth-back {
+    display: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body.auth-mode {
+    overflow: hidden !important;
+  }
+
+  .auth-page.mobile-auth-screen {
+    padding: max(1rem, env(safe-area-inset-top)) 0.9rem max(1rem, env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    align-content: center !important;
+  }
+
+  .auth-page .auth-poster-wall {
+    inset: -8vh -46vw !important;
+    grid-template-columns: repeat(5, minmax(88px, 1fr)) !important;
+    opacity: 0.82 !important;
+  }
+
+  .auth-page .auth-card {
+    width: min(92vw, 22.5rem) !important;
+    padding: 1.15rem !important;
+  }
+
+  .auth-page .mobile-auth-back {
+    display: grid !important;
+    position: fixed !important;
+    top: max(0.75rem, env(safe-area-inset-top)) !important;
+    left: 0.85rem !important;
+    z-index: 5 !important;
+  }
+}

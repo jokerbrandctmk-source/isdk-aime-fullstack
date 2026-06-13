@@ -111,9 +111,16 @@ function isAbsoluteAsset(value) {
   return /^(https?:|data:|blob:|capacitor:|file:)/i.test(String(value || ""));
 }
 
+function isPlaceholderAsset(value) {
+  const source = String(value || "");
+  return /res\.cloudinary\.com\/x{3,}\//i.test(source) ||
+    /\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(source);
+}
+
 function assetUrl(value, fallback = "/assets/anime/ff-image.jpg") {
   const source = String(value || fallback || "").trim();
   if (!source) return fallback;
+  if (isPlaceholderAsset(source)) return fallback;
   if (isAbsoluteAsset(source)) return source;
 
   const baseUrl = getApiBaseUrl();
@@ -2061,7 +2068,37 @@ function renderAuthFeaturePanel() {
 
 function renderAuthPage() {
   const isRegister = state.authMode === "register";
-  const authImages = state.anime.length ? state.anime.slice(0, 5) : DEFAULT_ANIME.slice(0, 5);
+  const localAuthImages = [
+    {
+      title: "ISDK Anime",
+      poster: "/assets/anime/A Demon King .png",
+      backdrop: "/assets/anime/A Demon King .png"
+    },
+    {
+      title: "Mushoku Tensei",
+      poster: "/assets/anime/Mushoku Tensei.png",
+      backdrop: "/assets/anime/Mushoku Tensei.png"
+    },
+    {
+      title: "Anime World",
+      poster: "/assets/anime/ff-image.jpg",
+      backdrop: "/assets/anime/ff-image.jpg"
+    },
+    {
+      title: "ISKD Backdrop",
+      poster: "/assets/anime/backdrop.png",
+      backdrop: "/assets/anime/backdrop.png"
+    },
+    {
+      title: "ISKD Poster",
+      poster: "/assets/anime/poster.png",
+      backdrop: "/assets/anime/poster.png"
+    }
+  ];
+  const authImages = [
+    ...localAuthImages,
+    ...(state.anime.length ? state.anime : DEFAULT_ANIME)
+  ].filter((anime) => !isPlaceholderAsset(anime.poster) && !isPlaceholderAsset(anime.backdrop)).slice(0, 10);
   const imageSlides = authImages
     .map(
       (anime, index) =>

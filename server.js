@@ -336,9 +336,13 @@ async function getCurrentUser(req, db) {
 }
 
 function publicAssetExists(assetPath) {
-  if (!assetPath || !assetPath.startsWith("/")) return true;
+  if (!assetPath) return false;
+  if (/^https?:\/\//i.test(assetPath)) {
+    return !/res\.cloudinary\.com\/x{3,}\//i.test(assetPath) &&
+      !/\/x{3,}\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(assetPath);
+  }
+  if (!assetPath.startsWith("/")) return true;
   if (assetPath.startsWith("/media/")) return true;
-  if (/^https?:\/\//i.test(assetPath)) return true;
 
   const relativePath = assetPath.replace(/^\/+/, "");
   const publicPath = path.join(PUBLIC_DIR, relativePath);
