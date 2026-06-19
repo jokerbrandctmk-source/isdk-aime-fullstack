@@ -29,7 +29,7 @@ module.exports = {
           number: 1,
           title: "Rain Over New Edo",
           duration: 1440,
-          video: "https://vz-7431961c-422.b-cdn.net/cb58d715-af27-4b6d-b41d-32e3e01e02b9/playlist.m3u8",
+          video: "https://www.w3schools.com/html/mov_bbb.mp4",
           synopsis: "Kira accepts one last delivery and finds a secret worth killing for."
         },
         {
@@ -37,7 +37,7 @@ module.exports = {
           number: 2,
           title: "The Blade in Sector 7",
           duration: 1415,
-          video: "https://vz-7431961c-422.b-cdn.net/cb58d715-af27-4b6d-b41d-32e3e01e02b9/playlist.m3u8",
+          video: "https://www.w3schools.com/html/mov_bbb.mp4",
           synopsis: "A vanished swordmaster returns as the city begins to hunt Kira."
         },
         {

@@ -142,15 +142,9 @@ async function proxyHls(req, res, url) {
   "Accept": "*/*"
 };
   if (req.headers.range) headers.Range = req.headers.range;
-  console.log(
-  "HLS URL:",
-  targetUrl.toString()
-);
-console.log(
-  "Upstream Status:",
-  upstream.status
-);
   const upstream = await fetch(targetUrl, { headers });
+  console.log("HLS URL:", targetUrl.toString());
+  console.log("Upstream Status:", upstream.status);
   const upstreamType = upstream.headers.get("content-type") || "";
   const isManifest = /\.m3u8(\?|#|$)/i.test(targetUrl.pathname) || upstreamType.includes("mpegurl");
 
@@ -307,9 +301,26 @@ function sanitizeUser(user) {
 async function readDb() {
   try {
     const raw = await fs.readFile(DB_PATH, "utf8");
+    if (!raw.trim()) throw new Error("DB file is empty.");
     return JSON.parse(raw);
   } catch (error) {
-    if (error.code !== "ENOENT") throw error;
+    if (error.code === "ENOENT") {
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await writeDb(seed);
+      return structuredClone(seed);
+    }
+
+    const backupPath = path.join(DATA_DIR, "db.backup.json");
+    try {
+      const backupRaw = await fs.readFile(backupPath, "utf8");
+      if (backupRaw.trim()) {
+        return JSON.parse(backupRaw);
+      }
+    } catch {
+      // Ignore backup recovery failure and fall back to seed.
+    }
+
+    console.warn("DB read failed, restoring seed data:", error.message);
     await fs.mkdir(DATA_DIR, { recursive: true });
     await writeDb(seed);
     return structuredClone(seed);
@@ -318,7 +329,10 @@ async function readDb() {
 
 async function writeDb(db) {
   await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(DB_PATH, `${JSON.stringify(db, null, 2)}\n`, "utf8");
+  const tempPath = `${DB_PATH}.${process.pid}.${Date.now()}.tmp`;
+  await fs.writeFile(tempPath, `${JSON.stringify(db, null, 2)}\n`, "utf8");
+  await fs.rename(tempPath, DB_PATH);
+  await fs.writeFile(path.join(DATA_DIR, "db.backup.json"), `${JSON.stringify(db, null, 2)}\n`, "utf8");
 }
 
 async function readJsonBody(req) {
@@ -536,7 +550,15 @@ function cleanAssetPath(value) {
 }
 
 function hasSupabaseAnime() {
-  return Boolean(SUPABASE_URL && SUPABASE_KEY);
+  if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+
+  try {
+    new URL(SUPABASE_URL);
+    return true;
+  } catch (error) {
+    console.warn("Invalid SUPABASE_URL detected, falling back to local DB:", error.message);
+    return false;
+  }
 }
 
 async function supabaseRequest(pathname, options = {}) {
@@ -1042,69 +1064,34 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true, name: "ISKD Anime API" });
   }
 
-  if (
-  req.method === "GET" &&
-  pathname === "/api/genres"
-) {
+  if (req.method === "GET" && pathname === "/api/genres") {
+    try {
+      if (hasSupabaseAnime()) {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/anime?select=genre`, {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`
+          }
+        });
 
-  try {
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/anime?select=genre`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
+        if (!response.ok) {
+          const err = await response.text();
+          console.error("Genres API Supabase error:", err);
+          return sendError(res, 500, err);
         }
+
+        const data = await response.json();
+        const genres = [...new Set((Array.isArray(data) ? data : []).map((item) => item.genre).filter(Boolean))];
+        return sendJson(res, 200, { genres });
       }
-    );
 
-    if (!response.ok) {
-
-      const err =
-        await response.text();
-
-      console.error(err);
-
-      return sendError(
-        res,
-        500,
-        err
-      );
+      const genres = [...new Set((db.anime || []).flatMap((item) => Array.isArray(item.genres) ? item.genres : []).filter(Boolean))].sort();
+      return sendJson(res, 200, { genres });
+    } catch (error) {
+      console.error("Genres API Error:", error);
+      return sendError(res, 500, error.message || "Genres API failed.");
     }
-
-    const data =
-      await response.json();
-
-    const genres =
-      [...new Set(
-
-        data
-          .map(x => x.genre)
-          .filter(Boolean)
-
-      )];
-
-    return sendJson(
-      res,
-      200,
-      genres
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Genres API Error:",
-      error
-    );
-
-    return sendError(
-      res,
-      500,
-      error.message
-    );
   }
-}
   if (req.method === "GET" && pathname === "/api/anime") {
     const search = (url.searchParams.get("search") || "").trim().toLowerCase();
     const genre = (url.searchParams.get("genre") || "All").trim();
@@ -1395,6 +1382,20 @@ if (
   const body = await readJsonBody(req);
 
   const clientId = cleanText(body.clientId, "guest", 120);
+
+  if (!hasSupabaseAnime()) {
+    const anime = await findAnimeAny(db, animeSlug);
+    if (!anime) return sendError(res, 404, "Anime not found.");
+    const liked = Array.isArray(anime.likedBy) && anime.likedBy.includes(clientId);
+    const nextLiked = !liked;
+    const nextLikedBy = nextLiked
+      ? Array.from(new Set([...(anime.likedBy || []), clientId]))
+      : (anime.likedBy || []).filter((item) => item !== clientId);
+    anime.likedBy = nextLikedBy;
+    anime.likes = nextLikedBy.length;
+    await writeDb(db);
+    return sendJson(res, 200, { liked: nextLiked, likes: anime.likes, likedBy: anime.likedBy });
+  }
 
   const existing = await supabaseRequest(
     `likes?anime_id=eq.${animeSlug}&user_id=eq.${clientId}`

@@ -4588,6 +4588,7 @@ video::-webkit-media-controls-overlay-play-button {
 
   .rail .anime-card h3 {
     display: -webkit-box !important;
+    line-clamp: 2 !important;
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
     min-height: 2.35em !important;
@@ -4597,6 +4598,7 @@ video::-webkit-media-controls-overlay-play-button {
 
   .rail .anime-card p {
     display: -webkit-box !important;
+    line-clamp: 2 !important;
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
@@ -5075,6 +5077,7 @@ body.watch-mode .player img {
   .mobile-poster-grid .anime-card h3 {
     white-space: normal !important;
     display: -webkit-box !important;
+    line-clamp: 2 !important;
     -webkit-line-clamp: 2 !important;
     -webkit-box-orient: vertical !important;
     min-height: 2.1rem !important;

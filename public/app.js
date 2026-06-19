@@ -77,8 +77,7 @@ const MONETIZATION_REQUIREMENTS = {
   views: 2000000
 };
 
-const SAMPLE_STREAM_URL =
-  "https://vz-7431961c-422.b-cdn.net/cb58d715-af27-4b6d-b41d-32e3e01e02b9/playlist.m3u8";
+const SAMPLE_STREAM_URL = "https://www.w3schools.com/html/mov_bbb.mp4";
 const MISSING_LOCAL_VIDEO = "/uploads/d2cf6r4o5jxp6kosfzf1qjw6e.mp4";
 const MISSING_LOCAL_BACKDROP = "/uploads/efacel4ylzkum8kskl73wb6ea.jpg";
 
@@ -90,10 +89,18 @@ function getApiBaseUrl() {
   const queryBase = new URLSearchParams(window.location.search).get("apiBase");
   if (queryBase) {
     localStorage.setItem("isdk_api_base_url", queryBase);
+    return String(queryBase).trim().replace(/\/+$/, "");
   }
-  const savedBase = localStorage.getItem("isdk_api_base_url");
-  const configuredBase = getAppConfig().apiBaseUrl;
-  return String(queryBase || savedBase || configuredBase || "").trim().replace(/\/+$/, "");
+
+  const configuredBase = String(getAppConfig().apiBaseUrl || "").trim();
+  if (configuredBase) {
+    return configuredBase.replace(/\/+$/, "");
+  }
+
+  const currentOrigin = window.location.origin;
+  return currentOrigin && !/^about:|^chrome-extension:/i.test(currentOrigin)
+    ? currentOrigin
+    : "";
 }
 
 function apiUrl(path) {
@@ -208,6 +215,20 @@ function repairMissingUploadReferences(db) {
   if (!db || !Array.isArray(db.anime)) return false;
   let changed = false;
 
+  const sanitizeEpisodeVideo = (episode) => {
+    const raw = String(episode?.video || "").trim();
+    const isBlockedSampleUrl = /vz-[^/]+\.b-cdn\.net\/[^\s]+\/playlist\.m3u8/i.test(raw) || /playlist\.m3u8/i.test(raw) && /b-cdn\.net/i.test(raw);
+
+    if (raw === MISSING_LOCAL_VIDEO || isBlockedSampleUrl) {
+      episode.video = SAMPLE_STREAM_URL;
+      episode.videoStorage = "external-url";
+      changed = true;
+      return true;
+    }
+
+    return false;
+  };
+
   db.anime.forEach((anime) => {
     if (anime.backdrop === MISSING_LOCAL_BACKDROP) {
       anime.backdrop = anime.poster || "/assets/anime/ff-image.jpg";
@@ -215,11 +236,7 @@ function repairMissingUploadReferences(db) {
     }
 
     (anime.episodes || []).forEach((episode) => {
-      if (episode.video === MISSING_LOCAL_VIDEO) {
-        episode.video = SAMPLE_STREAM_URL;
-        episode.videoStorage = "bunny-hls";
-        changed = true;
-      }
+      sanitizeEpisodeVideo(episode);
     });
   });
 
@@ -463,7 +480,7 @@ function proxiedHlsUrl(value) {
   const source = String(value || "").trim();
   if (source.includes("/api/hls-proxy?")) return source;
   if (!source || !isHlsUrl(source) || !/^https?:\/\//i.test(source)) return source;
-  return apiUrl(`/api/hls-proxy?url=${encodeURIComponent(source)}`);
+  return source;
 }
 
 function youtubeEmbedUrl(value) {
@@ -694,7 +711,7 @@ function filterLocalAnime(path) {
 
 function isValidApiPayload(path, data) {
   if (!data || typeof data !== "object") return false;
-  if (path.startsWith("/api/genres")) return Array.isArray(data.genres);
+  if (path.startsWith("/api/genres")) return Array.isArray(data.genres) || Array.isArray(data);
   if (path === "/api/anime") return Array.isArray(data.anime) || Boolean(data.anime);
   if (path.startsWith("/api/anime?")) return Array.isArray(data.anime);
   if (path.startsWith("/api/anime/") && path.endsWith("/view")) return Number.isFinite(Number(data.views));
@@ -1465,6 +1482,27 @@ async function toggleAnimeLike(slug) {
   }
 }
 
+function shareCurrentPage(title = document.title) {
+  const shareUrl = location.href;
+  const shareData = {
+    title,
+    text: `${title} — watch this anime on ISKD Anime.`,
+    url: shareUrl
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch(() => {
+      toast("Share cancelled.");
+    });
+    return;
+  }
+
+  navigator.clipboard
+    ?.writeText(`${shareData.title}\n${shareData.url}`)
+    .then(() => toast("Share link copied."))
+    .catch(() => toast("Share link could not be copied."));
+}
+
 function renderHero(anime) {
   if (!anime) {
     return `
@@ -1525,7 +1563,7 @@ if (!firstEpisode) {
           ${
             firstEpisode.video
               ? `
-                <video class="trailer-preview" muted loop autoplay playsinline preload="metadata" poster="${escapeHtml(backdropImage)}">
+                <video class="trailer-preview" loop autoplay playsinline preload="metadata" poster="${escapeHtml(backdropImage)}">
                   <source src="${escapeHtml(assetUrl(firstEpisode.video, ""))}" />
                 </video>
                 <form id="commentForm">
@@ -3096,6 +3134,7 @@ async function renderWatch(slug, episodeId) {
             <button class="ghost-button" type="button" data-like="${anime.slug}">
               ${userLiked(anime) ? "Unlike" : "Like"} (${anime.likes || 0})
             </button>
+            <button class="ghost-button" type="button" data-share="${anime.slug}">Share</button>
           </div>
           <p class="muted">${escapeHtml(episode.synopsis)}</p>
         </div>
@@ -3880,6 +3919,12 @@ function bindGlobalEvents() {
     const likeButton = event.target.closest("[data-like]");
     if (likeButton) {
       await toggleAnimeLike(likeButton.dataset.like);
+      return;
+    }
+
+    const shareButton = event.target.closest("[data-share]");
+    if (shareButton) {
+      shareCurrentPage(document.title);
       return;
     }
 
