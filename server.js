@@ -654,6 +654,27 @@ async function insertSupabaseAnime(body) {
   const row = Array.isArray(rows) ? rows[0] : rows;
   return supabaseRowToAnime(row);
 }
+async function deleteSupabaseAnime(slug) {
+
+  const animeList = await readSupabaseAnime();
+
+  const anime = animeList.find(
+    item => item.slug === slug
+  );
+
+  if (!anime) {
+    throw new Error("Anime not found in Supabase");
+  }
+
+  const response = await supabaseRequest(
+    `${SUPABASE_ANIME_TABLE}?id=eq.${anime.supabaseId}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  return response;
+}
 
 function parseMultipart(req, options = {}) {
   return new Promise((resolve, reject) => {
@@ -1432,23 +1453,52 @@ if (
   parts[1] === "anime" &&
   parts[2]
 ) {
+  const user = await getCurrentUser(req, db);
+  if (!user) {
+    return sendError(res, 401, "Sign in required.");
+  }
 
   const slug = parts[2];
 
-  const index =
-    db.anime.findIndex(
-      (item) => item.slug === slug
-    );
+  // Local DB
+  const index = db.anime.findIndex(
+    (item) => item.slug === slug
+  );
 
-  if (index === -1) {
+  if (index !== -1) {
+    const [removedAnime] = db.anime.splice(index, 1);
 
-    return sendError(
-      res,
-      404,
-      "Anime not found."
-    );
+    await deleteAnimeAssets(removedAnime);
+    await writeDb(db);
 
+    return sendJson(res, 200, {
+      success: true
+    });
   }
+
+  // Supabase anime
+  if (hasSupabaseAnime()) {
+    try {
+      await deleteSupabaseAnime(slug);
+
+      return sendJson(res, 200, {
+        success: true
+      });
+    } catch (error) {
+      return sendError(
+        res,
+        500,
+        error.message
+      );
+    }
+  }
+
+  return sendError(
+    res,
+    404,
+    "Anime not found."
+  );
+}
 
   const [removedAnime] = db.anime.splice(index, 1);
 
