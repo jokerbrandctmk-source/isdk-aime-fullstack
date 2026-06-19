@@ -301,26 +301,9 @@ function sanitizeUser(user) {
 async function readDb() {
   try {
     const raw = await fs.readFile(DB_PATH, "utf8");
-    if (!raw.trim()) throw new Error("DB file is empty.");
     return JSON.parse(raw);
   } catch (error) {
-    if (error.code === "ENOENT") {
-      await fs.mkdir(DATA_DIR, { recursive: true });
-      await writeDb(seed);
-      return structuredClone(seed);
-    }
-
-    const backupPath = path.join(DATA_DIR, "db.backup.json");
-    try {
-      const backupRaw = await fs.readFile(backupPath, "utf8");
-      if (backupRaw.trim()) {
-        return JSON.parse(backupRaw);
-      }
-    } catch {
-      // Ignore backup recovery failure and fall back to seed.
-    }
-
-    console.warn("DB read failed, restoring seed data:", error.message);
+    if (error.code !== "ENOENT") throw error;
     await fs.mkdir(DATA_DIR, { recursive: true });
     await writeDb(seed);
     return structuredClone(seed);
@@ -329,10 +312,7 @@ async function readDb() {
 
 async function writeDb(db) {
   await fs.mkdir(DATA_DIR, { recursive: true });
-  const tempPath = `${DB_PATH}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tempPath, `${JSON.stringify(db, null, 2)}\n`, "utf8");
-  await fs.rename(tempPath, DB_PATH);
-  await fs.writeFile(path.join(DATA_DIR, "db.backup.json"), `${JSON.stringify(db, null, 2)}\n`, "utf8");
+  await fs.writeFile(DB_PATH, `${JSON.stringify(db, null, 2)}\n`, "utf8");
 }
 
 async function readJsonBody(req) {
@@ -1183,7 +1163,9 @@ anime = anime
   }
 
   if (req.method === "POST" && pathname === "/api/anime") {
+    console.log("AUTH HEADER:", req.headers.authorization);
     const user = await getCurrentUser(req, db);
+    console.log("USER:", user);
     if (!user) return sendError(res, 401, "Sign in required.");
 
     const body = await readJsonBody(req);
