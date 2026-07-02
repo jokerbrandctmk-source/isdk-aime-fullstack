@@ -575,8 +575,20 @@
     padding: 42dvh 1rem 2rem !important;
   }
 
-  .hero-preview,
-  .hero-poster,
+  .hero-preview {
+    display: block !important;
+    width: min(54vw, 200px) !important;
+    max-width: 100%;
+    margin: 0 0 0.9rem;
+    order: -1;
+  }
+
+  .hero-poster {
+    display: block !important;
+    width: 100% !important;
+    max-height: 250px;
+  }
+
   .hero-synopsis,
   .hero .meta-row,
   .hero .hero-slide-dots {
@@ -3752,8 +3764,25 @@ video::-webkit-media-controls-overlay-play-button {
     padding: 42dvh 1rem 2rem !important;
   }
 
-  .hero-preview,
-  .hero-poster,
+  .hero-preview {
+    display: block !important;
+    width: min(100%, 220px) !important;
+    max-width: 100% !important;
+    margin: 0 0 1rem !important;
+    order: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .hero-poster {
+    display: block !important;
+    width: 100% !important;
+    max-height: 280px !important;
+    object-fit: cover !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
   .hero-synopsis,
   .hero .meta-row,
   .hero .hero-slide-dots,
@@ -4779,6 +4808,137 @@ body.watch-mode .player::before {
   display: none !important;
 }
 
+.auth-card-top {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.auth-card .auth-welcome {
+  margin: 0;
+  color: var(--cyan);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.auth-card .auth-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+  line-height: 1.45;
+}
+
+.auth-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.auth-badges span {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(30, 211, 198, 0.24);
+  border-radius: 999px;
+  background: rgba(30, 211, 198, 0.1);
+  color: #d8fffb;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.auth-card .auth-field {
+  display: grid;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.auth-card .auth-field > span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.auth-card .password-field {
+  position: relative;
+}
+
+.auth-card .password-toggle {
+  position: absolute;
+  top: 2.05rem;
+  right: 0.7rem;
+  border: 0;
+  background: transparent;
+  color: var(--orange);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.auth-card .auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.auth-card .auth-remember input {
+  width: auto;
+  height: auto;
+  margin: 0;
+  accent-color: var(--orange);
+}
+
+.auth-card .otp-row {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.auth-card .otp-button,
+.auth-card .ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.05rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+}
+
+.auth-card .auth-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.auth-card .auth-actions .wide,
+.auth-card .ghost-button.wide {
+  width: 100%;
+}
+
+.auth-card .google-auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3.05rem;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255,255,255,0.08);
+  font-weight: 800;
+}
+
+.auth-card .google-auth-button span {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #101114;
+  font-weight: 900;
+}
+
 body.watch-mode .player video,
 body.watch-mode .player img {
   width: 100% !important;
@@ -5233,7 +5393,20 @@ body.watch-mode .player img {
   }
 
   .hero-preview {
-    display: none !important;
+    display: block !important;
+    width: min(46vw, 180px) !important;
+    max-width: 100% !important;
+    margin: 0 0 0.9rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .hero-poster {
+    display: block !important;
+    width: 100% !important;
+    max-height: 220px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   body.watch-mode .player {

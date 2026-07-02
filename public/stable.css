@@ -685,7 +685,16 @@ body.auth-mode .mobile-tabbar {
   }
 
   .hero-preview {
-    display: none !important;
+    display: block !important;
+    width: min(46vw, 200px) !important;
+    max-width: 100% !important;
+    margin: 0 0 1rem !important;
+  }
+
+  .hero-poster {
+    display: block !important;
+    width: 100% !important;
+    max-height: 240px !important;
   }
 
   .watch-layout {

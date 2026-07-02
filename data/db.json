@@ -320,7 +320,12 @@
       "id": "usr_4f54d742-4579-4a59-b1f5-0446fddf4e7c",
       "username": "jokerbrandctmk@gmail.com",
       "passwordHash": "4aa2a59715d6faa447a41711f5714f02:3f307d76e8b5c731c21c6c4ae246f3bf5e74886f73581a2ab1deb4b3a77c75d249c3aa2b642f1d5c32f9e8535f2d1289e95ca66b270cd22634c00cf8cf1748fb",
-      "createdAt": "2026-05-03T05:39:56.188Z"
+      "createdAt": "2026-05-03T05:39:56.188Z",
+      "firebaseUid": "local_1782921615959",
+      "email": "jokerbrandctmk@gmail.com",
+      "phoneNumber": "",
+      "displayName": "jokerbrandctmk",
+      "photoURL": ""
     },
     {
       "id": "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42",
@@ -439,7 +444,7 @@
   },
   "cloudStats": {
     "aster-guardians": {
-      "views": 92,
+      "views": 93,
       "likes": 0,
       "likedBy": []
     },
@@ -450,5 +455,11 @@
         "client_1778585308807_0c7b6233f534d"
       ]
     }
-  }
+  },
+  "channels": [],
+  "subscribers": {},
+  "notifications": [],
+  "revenue": [],
+  "verificationRequests": [],
+  "reports": []
 }

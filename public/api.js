@@ -1,8 +1,61 @@
-const SUPABASE_URL =
-  "https://twdlpukkgdkviwxywbkl.supabase.co";
+const rootWindow = typeof window !== "undefined" ? window : globalThis;
 
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZGxwdWtrZ2Rrdml3eHl3YmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTc0ODIsImV4cCI6MjA5NTEzMzQ4Mn0.yFHt4zm-Li-373miMb8kslPvBNgedRLkeCTRSymPzxM";
+function getConfiguredApiBaseUrl() {
+  const configuredBase = String(rootWindow.ISKD_CONFIG?.apiBaseUrl || "").trim();
+  if (configuredBase) {
+    return configuredBase.replace(/\/+$/, "");
+  }
+
+  const currentOrigin = String(rootWindow.location?.origin || "").trim();
+  return currentOrigin && !/^about:|^chrome-extension:/i.test(currentOrigin)
+    ? currentOrigin
+    : "";
+}
+
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function normalizeAnimeEntry(anime) {
+  const title = String(anime?.title || anime?.name || "Untitled Anime").trim();
+  const slug = String(anime?.slug || slugify(title) || "anime").trim();
+
+  return {
+    id: anime?.id || slug,
+    slug,
+    title,
+    japaneseTitle: anime?.japaneseTitle || title,
+    tagline: anime?.tagline || anime?.genre || "Anime",
+    synopsis: anime?.synopsis || anime?.description || "",
+    type: anime?.type || "Series",
+    status: anime?.status || "Released",
+    year: Number(anime?.year || new Date().getFullYear()),
+    rating: Number(anime?.rating || 4.5),
+    genres: Array.isArray(anime?.genres)
+      ? anime.genres.filter(Boolean)
+      : [anime?.genre || "Action"].filter(Boolean),
+    poster: anime?.poster || anime?.image || "/assets/anime/ff-image.jpg",
+    backdrop: anime?.backdrop || anime?.poster || anime?.image || "/assets/anime/ff-image.jpg",
+    logo: anime?.logo || anime?.poster || anime?.image || "/assets/anime/ff-image.jpg",
+    views: Number(anime?.views || 0),
+    likes: Number(anime?.likes || 0),
+    likedBy: Array.isArray(anime?.likedBy) ? anime.likedBy : [],
+    popularity: Number(anime?.popularity || 0),
+    episodes: Array.isArray(anime?.episodes)
+      ? anime.episodes.map((episode, index) => ({
+          id: episode?.id || `${slug}-${index + 1}`,
+          title: episode?.title || `${title} Episode ${index + 1}`,
+          number: Number(episode?.number || index + 1),
+          duration: episode?.duration || 1440,
+          thumbnail: episode?.thumbnail || anime?.poster || "/assets/anime/ff-image.jpg",
+          video: episode?.video || ""
+        }))
+      : []
+  };
+}
 
 
 

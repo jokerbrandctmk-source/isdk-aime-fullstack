@@ -405,6 +405,134 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "") || "custom-anime";
 }
 
+async function loadCreatorChannels() {
+  try {
+    const data = await api.get("/api/channels");
+    return asArray(data.channels);
+  } catch {
+    return [];
+  }
+}
+
+async function loadMyChannel() {
+  try {
+    const data = await api.get("/api/channels/me");
+    return data.channel || null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveChannelProfile(payload) {
+  return api.post("/api/channels/me", payload);
+}
+
+async function renderChannelPage(slug) {
+  try {
+    const channelData = await api.get(`/api/channels/${slug}`);
+    const analyticsData = await api.get(`/api/channels/${slug}/analytics`).catch(() => ({ overview: null }));
+    const channel = channelData.channel;
+    if (!channel) {
+      app.innerHTML = `
+        <section class="content-band">
+          <div class="empty-state">
+            <p>Channel not found.</p>
+          </div>
+        </section>
+      `;
+      return;
+    }
+
+    const overview = analyticsData.overview || {};
+    const viewerId = state.user?.uid || state.user?.id || currentLocalUser()?.id || "";
+    const isOwnChannel = Boolean(channel.userId && viewerId && String(channel.userId) === String(viewerId));
+    const featuredAnime = state.anime.filter((item) => {
+      const creators = [item.createdByName, item.createdByChannel, item.studios?.join(" ")].filter(Boolean);
+      const matchText = creators.join(" ").toLowerCase();
+      return matchText.includes(String(channel.name || "").toLowerCase()) || matchText.includes(String(channel.username || "").toLowerCase()) || item.createdByChannel === channel.slug;
+    }).slice(0, 4);
+
+    app.innerHTML = `
+      <section class="creator-channel-page">
+        <div class="creator-channel-hero">
+          <div class="creator-channel-cover" style="background-image: url('${escapeHtml(assetUrl(channel.banner || "/assets/anime/ff-image.jpg"))}')"></div>
+          <div class="creator-channel-card">
+            <div class="creator-channel-summary">
+              <div class="creator-channel-avatar">${escapeHtml(String(channel.name || channel.username || "C").slice(0, 1).toUpperCase())}</div>
+              <div>
+                <p class="eyebrow">${channel.verified ? "Verified creator" : "Creator channel"}</p>
+                <h1>${escapeHtml(channel.name || channel.username || "Creator")}</h1>
+                <p class="muted">@${escapeHtml(channel.username || slug)} • ${Number(channel.subscribers || 0).toLocaleString()} subscribers</p>
+              </div>
+            </div>
+            <div class="creator-channel-actions">
+              <button class="primary-button" type="button" data-follow-channel="${escapeHtml(channel.slug)}">${channel.subscribers ? "Follow" : "Follow"}</button>
+              ${isOwnChannel ? `<a class="ghost-button" href="#subscribe/settings">Edit studio</a>` : ""}
+            </div>
+          </div>
+        </div>
+
+        <div class="creator-channel-grid">
+          <article class="studio-panel">
+            <h2>About</h2>
+            <p class="muted">${escapeHtml(channel.about || "This creator is building a fresh anime experience for the ISKD community.")}</p>
+            ${channel.website ? `<p><strong>Website:</strong> <a href="${escapeHtml(channel.website)}" target="_blank" rel="noreferrer">${escapeHtml(channel.website)}</a></p>` : ""}
+          </article>
+          <article class="studio-panel">
+            <h2>Channel stats</h2>
+            <div class="creator-metrics">
+              <article><span>Subscribers</span><strong>${Number(channel.subscribers || 0).toLocaleString()}</strong><small>Live community</small></article>
+              <article><span>Views</span><strong>${Number(channel.totalViews || 0).toLocaleString()}</strong><small>Channel watch views</small></article>
+              <article><span>Revenue</span><strong>${Number(channel.totalRevenue || 0).toLocaleString()}</strong><small>Creator earnings</small></article>
+              <article><span>Videos</span><strong>${Number(channel.totalVideos || 0).toLocaleString()}</strong><small>Uploaded titles</small></article>
+            </div>
+            <div class="creator-metrics">
+              <article><span>Likes</span><strong>${Number(channel.totalLikes || 0).toLocaleString()}</strong><small>Engagement</small></article>
+              <article><span>Comments</span><strong>${Number(channel.totalComments || 0).toLocaleString()}</strong><small>Community replies</small></article>
+              <article><span>Watch time</span><strong>${Number(channel.totalWatchTime || 0).toLocaleString()}</strong><small>Minutes watched</small></article>
+              <article><span>Eligible</span><strong>${overview.eligible ? "Yes" : "Pending"}</strong><small>Monetization</small></article>
+            </div>
+          </article>
+        </div>
+
+        <article class="studio-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Featured content</h2>
+              <p class="muted">Recent uploads and creator-led titles from this channel.</p>
+            </div>
+            ${isOwnChannel ? `<a class="ghost-button" href="#add-anime">Upload more</a>` : ""}
+          </div>
+          <div class="studio-table">
+            ${featuredAnime.length
+              ? featuredAnime.map((item) => `
+                <a class="studio-row" href="#details/${escapeHtml(item.slug)}">
+                  <img src="${escapeHtml(assetUrl(item.poster))}" alt="${escapeHtml(item.title)} poster" loading="lazy" decoding="async" />
+                  <span>
+                    <strong>${escapeHtml(item.title)}</strong>
+                    <small>${escapeHtml((item.genres || []).slice(0, 2).join(" / "))}</small>
+                  </span>
+                  <span>${Number(item.views || 0).toLocaleString()} views</span>
+                  <span>${Number(item.likes || 0).toLocaleString()} likes</span>
+                  <span>Open</span>
+                </a>
+              `).join("")
+              : '<div class="empty-state compact-empty"><p>No uploads yet. This creator can publish new anime from the studio page.</p></div>'}
+          </div>
+        </article>
+      </section>
+    `;
+  } catch (error) {
+    app.innerHTML = `
+      <section class="content-band">
+        <div class="empty-state">
+          <p>${escapeHtml(error.message || "Unable to load channel.")}</p>
+        </div>
+      </section>
+    `;
+  }
+}
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -2109,6 +2237,106 @@ function renderAuthFeaturePanel() {
   `;
 }
 
+function getStoredAccountMap() {
+  try {
+    return JSON.parse(localStorage.getItem("isdk_local_accounts") || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveStoredAccountMap(accounts) {
+  localStorage.setItem("isdk_local_accounts", JSON.stringify(accounts));
+}
+
+function hashPassword(password) {
+  const text = String(password || "");
+  try {
+    return window.btoa(unescape(encodeURIComponent(text)));
+  } catch {
+    return text;
+  }
+}
+
+function passwordMatches(password, storedHash) {
+  return hashPassword(String(password || "")) === String(storedHash || "");
+}
+
+function lookupStoredAccount(identifier) {
+  const key = String(identifier || "").trim().toLowerCase();
+  const accounts = getStoredAccountMap();
+  return accounts[key] || null;
+}
+
+function createStoredAccount(identifier, password, extra = {}) {
+  const key = String(identifier || "").trim().toLowerCase();
+  const accounts = getStoredAccountMap();
+  const normalizedName = String(identifier || "").trim();
+  const account = {
+    id: extra.id || `local_${Date.now()}`,
+    username: normalizedName,
+    displayName: extra.displayName || normalizedName.split("@")[0] || "Creator",
+    email: extra.email || (normalizedName.includes("@") ? normalizedName : ""),
+    phoneNumber: extra.phoneNumber || "",
+    photoURL: extra.photoURL || "",
+    passwordHash: hashPassword(String(password || "")),
+    createdAt: extra.createdAt || new Date().toISOString()
+  };
+  accounts[key] = account;
+  saveStoredAccountMap(accounts);
+  return account;
+}
+
+async function finishAuthSession(user, token = `local_${Date.now()}`) {
+  state.token = token;
+  state.user = {
+    ...user,
+    uid: user.uid || user.id,
+    displayName: user.displayName || user.username || user.email || "Creator"
+  };
+  localStorage.setItem("isdk_aime_token", token);
+  localStorage.setItem("firebase_user", JSON.stringify(state.user));
+  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(state.user));
+  updateAccountButton();
+  try {
+    await api.post("/api/auth/firebase", {
+      uid: state.user.uid,
+      email: state.user.email || "",
+      phoneNumber: state.user.phoneNumber || "",
+      displayName: state.user.displayName || state.user.username || "",
+      photoURL: state.user.photoURL || ""
+    });
+  } catch {
+    // Continue locally even if the cloud sync is unavailable.
+  }
+  await loadUserState();
+  return state.user;
+}
+
+async function authenticateWithLocalFlow(identifier, password, mode = "login") {
+  const normalized = String(identifier || "").trim();
+  if (!normalized) {
+    throw new Error("Email ya phone number enter karo.");
+  }
+
+  if (mode === "register") {
+    const account = createStoredAccount(normalized, password, {
+      displayName: normalized.includes("@") ? normalized.split("@")[0] : normalized,
+      email: normalized.includes("@") ? normalized : ""
+    });
+    return finishAuthSession(account);
+  }
+
+  const existing = lookupStoredAccount(normalized);
+  if (!existing) {
+    throw new Error("Account nahi mila. Pehle sign up karo.");
+  }
+  if (!passwordMatches(password, existing.passwordHash)) {
+    throw new Error("Password galat hai. Double-check karo.");
+  }
+  return finishAuthSession(existing);
+}
+
 function renderAuthPage() {
   const isRegister = state.authMode === "register";
   const localAuthImages = [
@@ -2178,24 +2406,39 @@ function renderAuthPage() {
         </div>
       </div>
       <form class="auth-card" id="pageAuthForm">
-        <p class="auth-welcome">Welcome my ISKD Anime App</p>
-        <h1>${isRegister ? "Create Account" : "Sign In"}</h1>
-        <label>
-          Gmail or Phone Number
+        <div class="auth-card-top">
+          <p class="auth-welcome">Welcome back to ISKD Anime</p>
+          <h1>${isRegister ? "Create your account" : "Sign in to continue"}</h1>
+          <p class="muted auth-subtitle">Save watchlist, likes, uploads, and creator studio progress in one secure profile.</p>
+        </div>
+        <div class="auth-badges">
+          <span>Cloud sync</span>
+          <span>Creator Studio</span>
+          <span>Fast OTP</span>
+        </div>
+        <label class="auth-field">
+          <span>Gmail or Phone Number</span>
           <input name="username" required minlength="3" autocomplete="username" placeholder="you@gmail.com or +91 phone" />
         </label>
-        <label>
-          Password
-          <input name="password" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" placeholder="Email login ke liye minimum 6 characters" />
+        <label class="auth-field password-field">
+          <span>Password</span>
+          <input id="authPasswordInput" name="password" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" placeholder="Minimum 6 characters" />
+          <button class="password-toggle" type="button" data-toggle-password>Show</button>
+        </label>
+        <label class="auth-remember">
+          <input type="checkbox" name="remember" checked /> Keep me signed in
         </label>
         <div class="otp-row">
-          <label>
-            OTP
-            <input name="otp" required inputmode="numeric" minlength="6" maxlength="6" autocomplete="one-time-code" placeholder="6 digit OTP" />
+          <label class="auth-field">
+            <span>OTP</span>
+            <input name="otp" inputmode="numeric" minlength="6" maxlength="6" autocomplete="one-time-code" placeholder="6 digit OTP" />
           </label>
           <button class="ghost-button otp-button" type="button" data-send-otp>Send OTP</button>
         </div>
-        <button class="primary-button glow-button wide" type="submit">${isRegister ? "Create Account" : "Sign In"}</button>
+        <div class="auth-actions">
+          <button class="primary-button glow-button wide" type="submit">${isRegister ? "Create Account" : "Sign In"}</button>
+          <button class="ghost-button wide" type="button" data-demo-login>Use demo account</button>
+        </div>
         <button class="google-auth-button" type="button" data-google-login>
           <span>G</span>
           Continue with Google
@@ -2203,7 +2446,7 @@ function renderAuthPage() {
         <button class="text-switch" type="button" data-page-auth-mode="${isRegister ? "login" : "register"}">
           ${isRegister ? "Already have an account? SIGN IN" : "New here? SIGN UP"}
         </button>
-        <p class="firebase-note">Sign up first if this account is new. Your cloud account keeps uploads, watchlist, likes, and comments synced.</p>
+        <p class="firebase-note">Sign up first if this account is new. Your account keeps uploads, watchlist, likes, and comments synced locally and on the cloud.</p>
         <p id="pageAuthMessage" class="form-message" role="status"></p>
       </form>
     </section>
@@ -2218,6 +2461,9 @@ function bindAuthPage() {
   const featureButtons = Array.from(document.querySelectorAll("[data-auth-feature]"));
   const otpButton = document.querySelector("[data-send-otp]");
   const googleButton = document.querySelector("[data-google-login]");
+  const demoButton = document.querySelector("[data-demo-login]");
+  const passwordToggle = document.querySelector("[data-toggle-password]");
+  const passwordInput = document.querySelector("#authPasswordInput");
   const backButton = document.querySelector("[data-auth-back]");
 
   backButton?.addEventListener("click", () => {
@@ -2242,6 +2488,12 @@ function bindAuthPage() {
     });
   });
 
+  passwordToggle?.addEventListener("click", () => {
+    const nextType = passwordInput?.type === "password" ? "text" : "password";
+    if (passwordInput) passwordInput.type = nextType;
+    passwordToggle.textContent = nextType === "password" ? "Show" : "Hide";
+  });
+
   otpButton?.addEventListener("click", async () => {
     const target = String(new FormData(form).get("username") || "").trim();
     if (!target || target.length < 3) {
@@ -2250,17 +2502,36 @@ function bindAuthPage() {
     }
     try {
       if (isPhoneLogin(target)) {
-        const phoneNumber = await sendFirebasePhoneOtp(target);
-        message.textContent = `OTP sent to ${phoneNumber}.`;
-        toast("Phone OTP sent.");
+        const phoneNumber = await sendFirebasePhoneOtp(target).catch(() => target);
+        state.pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
+        state.pendingOtpTarget = target.toLowerCase();
+        message.textContent = `OTP sent to ${phoneNumber}. Demo OTP: ${state.pendingOtp}`;
+        toast(`OTP sent to ${phoneNumber}.`);
         return;
       }
       state.pendingOtp = String(Math.floor(100000 + Math.random() * 900000));
       state.pendingOtpTarget = target.toLowerCase();
-      message.textContent = `Email test OTP: ${state.pendingOtp}`;
+      message.textContent = `Demo OTP sent to ${target}. Code: ${state.pendingOtp}`;
       toast(`OTP: ${state.pendingOtp}`);
     } catch (error) {
       message.textContent = firebaseErrorMessage(error);
+    }
+  });
+
+  demoButton?.addEventListener("click", async () => {
+    const demoIdentifier = "demo@iskd.com";
+    const demoPassword = "demo1234";
+    const formData = new FormData(form);
+    formData.set("username", demoIdentifier);
+    formData.set("password", demoPassword);
+    form.querySelector('input[name="username"]').value = demoIdentifier;
+    form.querySelector('input[name="password"]').value = demoPassword;
+    try {
+      await authenticateWithLocalFlow(demoIdentifier, demoPassword, state.authMode === "register" ? "register" : "login");
+      toast("Demo account signed in.");
+      location.hash = "#home";
+    } catch (error) {
+      message.textContent = error.message || "Demo account failed.";
     }
   });
 
@@ -2285,6 +2556,17 @@ function bindAuthPage() {
     const password = String(formData.get("password") || "");
 
     try {
+      if ((username.includes("@") || isPhoneLogin(username)) && password.length >= 6) {
+        if (!state.pendingOtp || state.pendingOtpTarget !== username.toLowerCase() || otp !== state.pendingOtp) {
+          message.textContent = "OTP compulsory hai. Send OTP dabao aur 6 digit OTP enter karo.";
+          return;
+        }
+        await authenticateWithLocalFlow(username, password, state.authMode === "register" ? "register" : "login");
+        toast(`Signed in as ${displayNameFromUser()}.`);
+        location.hash = "#home";
+        return;
+      }
+
       if (isPhoneLogin(username)) {
         await firebasePhoneLogin(username, otp);
       } else {
@@ -2319,6 +2601,7 @@ async function renderSubscribePage(section = "earn") {
   const stats = subscriptionStats();
   const overview = await loadStudioOverview();
   const totals = overview.totals || {};
+  const myChannel = await loadMyChannel().catch(() => null);
   const users = asArray(overview.users);
   const topAnime = asArray(overview.topAnime);
   const recentComments = asArray(overview.recentComments);
@@ -2351,6 +2634,8 @@ async function renderSubscribePage(section = "earn") {
   };
   const [eyebrow, title, description] = sectionTitles[activeSection];
   const animeRows = state.anime.slice(0, 8);
+  const channelSlug = myChannel?.slug || "";
+  const canEditChannel = Boolean(state.user || currentLocalUser());
   const studioBody = activeSection === "earn"
     ? `
         <div class="studio-tabs" role="tablist" aria-label="Monetization sections">
@@ -2545,6 +2830,26 @@ async function renderSubscribePage(section = "earn") {
                 <button class="primary-button" type="button" ${canApply ? "data-monetization-review" : "data-eligibility-details"}>
                   ${canApply ? primaryReviewLabel : "Need 1K subs + 2M views"}
                 </button>
+              </div>
+              <div class="studio-panel">
+                <h2>Creator channel</h2>
+                <p class="muted">Your public channel profile and studio identity are synced to the creator ecosystem.</p>
+                <div class="data-location">
+                  <p><strong>Channel:</strong> ${escapeHtml(myChannel?.name || "Creator channel")}</p>
+                  <p><strong>Handle:</strong> @${escapeHtml(myChannel?.username || "creator")}</p>
+                  <p><strong>Subscribers:</strong> ${Number(myChannel?.subscribers || 0).toLocaleString()}</p>
+                  <p><strong>Preview:</strong> ${channelSlug ? `<a href="#channel/${escapeHtml(channelSlug)}">Open public channel</a>` : "Create a channel to unlock this preview."}</p>
+                </div>
+                ${canEditChannel ? `
+                  <form id="channelProfileForm" class="creator-form compact-form">
+                    <label>Channel name<input name="name" value="${escapeHtml(myChannel?.name || "")}" maxlength="80" /></label>
+                    <label>Handle<input name="username" value="${escapeHtml(myChannel?.username || "")}" maxlength="40" /></label>
+                    <label>About<textarea name="about" maxlength="500">${escapeHtml(myChannel?.about || "")}</textarea></label>
+                    <label>Website<input name="website" value="${escapeHtml(myChannel?.website || "")}" maxlength="160" /></label>
+                    <label>Country<input name="country" value="${escapeHtml(myChannel?.country || "")}" maxlength="60" /></label>
+                    <button class="primary-button" type="submit">Save channel</button>
+                  </form>
+                ` : '<p class="muted">Sign in to edit your public creator profile.</p>'}
               </div>
               <div class="studio-panel">
                 <h2>Data location</h2>
@@ -3820,6 +4125,11 @@ async function route() {
       return;
     }
 
+    if (view === "channel" && slug) {
+      await renderChannelPage(slug);
+      return;
+    }
+
     renderHome();
   } catch (error) {
     app.innerHTML = `<section class="content-band"><div class="empty-state"><p>${escapeHtml(error.message)}</p></div></section>`;
@@ -4000,7 +4310,7 @@ function bindGlobalEvents() {
     }
   });
 
-  document.addEventListener("submit", (event) => {
+  document.addEventListener("submit", async (event) => {
     if (event.target.matches("#animeDbSearchForm")) {
       event.preventDefault();
       const query = String(new FormData(event.target).get("query") || "").trim();
@@ -4012,6 +4322,24 @@ function bindGlobalEvents() {
       event.preventDefault();
       state.aiQuery = String(new FormData(event.target).get("query") || "").trim();
       renderHome();
+    }
+
+    if (event.target.matches("#channelProfileForm")) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      try {
+        await saveChannelProfile({
+          name: String(formData.get("name") || "").trim(),
+          username: String(formData.get("username") || "").trim(),
+          about: String(formData.get("about") || "").trim(),
+          website: String(formData.get("website") || "").trim(),
+          country: String(formData.get("country") || "").trim()
+        });
+        toast("Channel updated.");
+        await renderSubscribePage("settings");
+      } catch (error) {
+        toast(error.message || "Unable to save channel.");
+      }
     }
   });
 

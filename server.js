@@ -298,15 +298,140 @@ function sanitizeUser(user) {
   };
 }
 
+function ensureCreatorStructures(db) {
+  db.channels ||= [];
+  db.subscribers ||= {};
+  db.notifications ||= [];
+  db.revenue ||= [];
+  db.verificationRequests ||= [];
+  db.reports ||= [];
+  db.comments ||= {};
+  db.watchlists ||= db.watchlists || {};
+  db.progress ||= db.progress || {};
+  db.cloudStats ||= db.cloudStats || {};
+
+  db.channels = (db.channels || []).map((channel) => ({
+    id: channel.id || `ch_${crypto.randomUUID()}`,
+    userId: channel.userId || "",
+    slug: channel.slug || slugify(channel.username || channel.name || "channel"),
+    name: channel.name || channel.username || "Creator Channel",
+    username: channel.username || channel.name || "creator",
+    profilePicture: channel.profilePicture || "",
+    banner: channel.banner || "",
+    about: channel.about || "",
+    socialLinks: Array.isArray(channel.socialLinks) ? channel.socialLinks : [],
+    website: channel.website || "",
+    country: channel.country || "",
+    joinDate: channel.joinDate || new Date().toISOString(),
+    creatorBadge: Boolean(channel.creatorBadge),
+    verified: Boolean(channel.verified),
+    subscribers: Number(channel.subscribers || 0),
+    totalViews: Number(channel.totalViews || 0),
+    totalWatchTime: Number(channel.totalWatchTime || 0),
+    totalRevenue: Number(channel.totalRevenue || 0),
+    totalVideos: Number(channel.totalVideos || 0),
+    totalLikes: Number(channel.totalLikes || 0),
+    totalComments: Number(channel.totalComments || 0),
+    monetizationStatus: channel.monetizationStatus || "Pending",
+    verificationStatus: channel.verificationStatus || "Pending",
+    isActive: channel.isActive !== false,
+    createdAt: channel.createdAt || new Date().toISOString()
+  }));
+
+  return db;
+}
+
+function sanitizeChannel(channel) {
+  if (!channel) return null;
+  return {
+    id: channel.id,
+    userId: channel.userId,
+    slug: channel.slug,
+    name: channel.name,
+    username: channel.username,
+    profilePicture: channel.profilePicture || "",
+    banner: channel.banner || "",
+    about: channel.about || "",
+    socialLinks: Array.isArray(channel.socialLinks) ? channel.socialLinks : [],
+    website: channel.website || "",
+    country: channel.country || "",
+    joinDate: channel.joinDate,
+    creatorBadge: Boolean(channel.creatorBadge),
+    verified: Boolean(channel.verified),
+    subscribers: Number(channel.subscribers || 0),
+    totalViews: Number(channel.totalViews || 0),
+    totalWatchTime: Number(channel.totalWatchTime || 0),
+    totalRevenue: Number(channel.totalRevenue || 0),
+    totalVideos: Number(channel.totalVideos || 0),
+    totalLikes: Number(channel.totalLikes || 0),
+    totalComments: Number(channel.totalComments || 0),
+    monetizationStatus: channel.monetizationStatus || "Pending",
+    verificationStatus: channel.verificationStatus || "Pending",
+    isActive: channel.isActive !== false,
+    createdAt: channel.createdAt
+  };
+}
+
+function ensureUserChannel(db, user) {
+  const channel = (db.channels || []).find((item) => item.userId === user.id);
+  if (channel) return channel;
+  const slug = slugify(user.displayName || user.username || `creator-${user.id}`);
+  const created = {
+    id: `ch_${crypto.randomUUID()}`,
+    userId: user.id,
+    slug: `${slug}-${String(user.id).slice(-4)}`,
+    name: user.displayName || user.username || "Creator Channel",
+    username: user.username || `creator${String(user.id).slice(-4)}`,
+    profilePicture: user.photoURL || "",
+    banner: "",
+    about: "New creator on ISKD Anime.",
+    socialLinks: [],
+    website: "",
+    country: "",
+    joinDate: new Date().toISOString(),
+    creatorBadge: true,
+    verified: false,
+    subscribers: 0,
+    totalViews: 0,
+    totalWatchTime: 0,
+    totalRevenue: 0,
+    totalVideos: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    monetizationStatus: "Pending",
+    verificationStatus: "Pending",
+    isActive: true,
+    createdAt: new Date().toISOString()
+  };
+  db.channels.push(created);
+  return created;
+}
+
+function updateChannelStats(db, channel, delta = {}) {
+  if (!channel) return null;
+  const target = (db.channels || []).find((item) => item.id === channel.id);
+  if (!target) return null;
+  target.subscribers = Number(target.subscribers || 0) + Number(delta.subscribers || 0);
+  target.totalViews = Number(target.totalViews || 0) + Number(delta.views || 0);
+  target.totalWatchTime = Number(target.totalWatchTime || 0) + Number(delta.watchTime || 0);
+  target.totalRevenue = Number(target.totalRevenue || 0) + Number(delta.revenue || 0);
+  target.totalVideos = Number(target.totalVideos || 0) + Number(delta.videos || 0);
+  target.totalLikes = Number(target.totalLikes || 0) + Number(delta.likes || 0);
+  target.totalComments = Number(target.totalComments || 0) + Number(delta.comments || 0);
+  return target;
+}
+
 async function readDb() {
   try {
     const raw = await fs.readFile(DB_PATH, "utf8");
-    return JSON.parse(raw);
+    const db = JSON.parse(raw);
+    return ensureCreatorStructures(db);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
     await fs.mkdir(DATA_DIR, { recursive: true });
-    await writeDb(seed);
-    return structuredClone(seed);
+    const seeded = ensureCreatorStructures(structuredClone(seed));
+    await writeDb(seeded);
+    return seeded;
   }
 }
 
@@ -1062,7 +1187,105 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === "GET" && pathname === "/api/health") {
-    return sendJson(res, 200, { ok: true, name: "ISKD Anime API" });
+    return sendJson(res, 200, { ok: true, name: "ISKD Anime API", creatorEco: true });
+  }
+
+  if (req.method === "GET" && pathname === "/api/channels") {
+    const channels = (db.channels || [])
+      .map((channel) => sanitizeChannel(channel))
+      .sort((left, right) => Number(right.subscribers || 0) - Number(left.subscribers || 0));
+    return sendJson(res, 200, { channels });
+  }
+
+  if (req.method === "GET" && pathname === "/api/channels/me") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const channel = ensureUserChannel(db, user);
+    await writeDb(db);
+    return sendJson(res, 200, { channel: sanitizeChannel(channel) });
+  }
+
+  if (req.method === "POST" && pathname === "/api/channels/me") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const body = await readJsonBody(req);
+    const channel = ensureUserChannel(db, user);
+    channel.name = cleanText(body.name || channel.name, channel.name, 80);
+    channel.username = cleanText(body.username || channel.username, channel.username, 40);
+    channel.slug = slugify(channel.username || channel.name || `${user.username}-channel`);
+    channel.about = cleanText(body.about || channel.about, channel.about || "", 500);
+    channel.website = cleanText(body.website || channel.website, "", 160);
+    channel.country = cleanText(body.country || channel.country, "", 60);
+    channel.profilePicture = cleanAssetPath(body.profilePicture || channel.profilePicture);
+    channel.banner = cleanAssetPath(body.banner || channel.banner);
+    channel.socialLinks = Array.isArray(body.socialLinks) ? body.socialLinks.slice(0, 6) : channel.socialLinks || [];
+    channel.creatorBadge = Boolean(body.creatorBadge ?? channel.creatorBadge);
+    channel.verified = Boolean(body.verified ?? channel.verified);
+    channel.monetizationStatus = cleanText(body.monetizationStatus || channel.monetizationStatus, channel.monetizationStatus || "Pending", 40);
+    channel.verificationStatus = cleanText(body.verificationStatus || channel.verificationStatus, channel.verificationStatus || "Pending", 40);
+    channel.isActive = body.isActive !== undefined ? Boolean(body.isActive) : channel.isActive !== false;
+    await writeDb(db);
+    return sendJson(res, 200, { channel: sanitizeChannel(channel) });
+  }
+
+  if (req.method === "GET" && parts[0] === "api" && parts[1] === "channels" && parts[2]) {
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    return sendJson(res, 200, { channel: sanitizeChannel(channel) });
+  }
+
+  if (req.method === "POST" && parts[0] === "api" && parts[1] === "channels" && parts[2] && parts[3] === "subscribe") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    db.subscribers[channel.id] ||= [];
+    const alreadySubscribed = db.subscribers[channel.id].includes(user.id);
+    if (alreadySubscribed) {
+      db.subscribers[channel.id] = db.subscribers[channel.id].filter((item) => item !== user.id);
+      updateChannelStats(db, channel, { subscribers: -1 });
+    } else {
+      db.subscribers[channel.id].push(user.id);
+      updateChannelStats(db, channel, { subscribers: 1 });
+      db.notifications.unshift({
+        id: `notif_${crypto.randomUUID()}`,
+        type: "new-subscriber",
+        channelId: channel.id,
+        userId: user.id,
+        createdAt: new Date().toISOString()
+      });
+    }
+    await writeDb(db);
+    return sendJson(res, 200, { subscribed: !alreadySubscribed, subscribers: Number(channel.subscribers || 0) });
+  }
+
+  if (req.method === "POST" && parts[0] === "api" && parts[1] === "channels" && parts[2] && parts[3] === "view") {
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    const body = await readJsonBody(req);
+    const watchTime = Number(body.watchTime || 0);
+    updateChannelStats(db, channel, { views: 1, watchTime });
+    await writeDb(db);
+    return sendJson(res, 200, { channel: sanitizeChannel(channel) });
+  }
+
+  if (req.method === "GET" && parts[0] === "api" && parts[1] === "channels" && parts[2] && parts[3] === "analytics") {
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    return sendJson(res, 200, {
+      channel: sanitizeChannel(channel),
+      overview: {
+        subscribers: Number(channel.subscribers || 0),
+        views: Number(channel.totalViews || 0),
+        watchTime: Number(channel.totalWatchTime || 0),
+        revenue: Number(channel.totalRevenue || 0),
+        likes: Number(channel.totalLikes || 0),
+        comments: Number(channel.totalComments || 0),
+        videos: Number(channel.totalVideos || 0),
+        eligible: Number(channel.subscribers || 0) >= 1000 && Number(channel.totalViews || 0) >= 2000000,
+        verified: Boolean(channel.verified)
+      }
+    });
   }
 
   if (req.method === "GET" && pathname === "/api/genres") {
@@ -1234,6 +1457,8 @@ anime = anime
           }))
           .filter((item) => item.label && item.url)
       : [];
+    const channel = ensureUserChannel(db, user);
+    channel.totalVideos = Number(channel.totalVideos || 0) + 1;
     const anime = {
       id: `ani_${crypto.randomUUID()}`,
       slug,
@@ -1266,6 +1491,7 @@ anime = anime
       secondary,
       createdBy: user.id,
       createdByName: user.username,
+      createdByChannel: channel.slug,
       createdAt: new Date().toISOString(),
       episodes: [
         {
@@ -1363,6 +1589,11 @@ if (
   const stats = ensureCloudStats(db, anime.slug, anime);
   stats.views = Number(stats.views || 0) + 1;
 
+  const channel = (db.channels || []).find((item) => item.userId === anime.createdBy);
+  if (channel) {
+    updateChannelStats(db, channel, { views: 1, watchTime: 60 });
+  }
+
   await writeDb(db);
 
   return sendJson(res, 200, {
@@ -1396,6 +1627,8 @@ if (
       : (anime.likedBy || []).filter((item) => item !== clientId);
     anime.likedBy = nextLikedBy;
     anime.likes = nextLikedBy.length;
+    const channel = (db.channels || []).find((item) => item.userId === anime.createdBy);
+    if (channel) updateChannelStats(db, channel, { likes: nextLiked ? 1 : -1 });
     await writeDb(db);
     return sendJson(res, 200, { liked: nextLiked, likes: anime.likes, likedBy: anime.likedBy });
   }
@@ -1500,19 +1733,7 @@ if (
   );
 }
 
-  const [removedAnime] = db.anime.splice(index, 1);
-
-  await deleteAnimeAssets(removedAnime);
-
-  await writeDb(db);
-
-  return sendJson(res, 200, {
-    success: true
-  });
-
-}
-
-  if (req.method === "POST" && pathname === "/api/auth/firebase") {
+if (req.method === "POST" && pathname === "/api/auth/firebase") {
     const body = await readJsonBody(req);
     const uid = String(body.uid || "").trim();
     const email = String(body.email || "").trim();
@@ -1761,6 +1982,11 @@ if (
         createdAt: new Date().toISOString()
       };
       db.comments[episodeId].unshift(entry);
+      const animeMatch = await findEpisodeAny(db, episodeId);
+      if (animeMatch?.anime?.createdBy) {
+        const channel = (db.channels || []).find((item) => item.userId === animeMatch.anime.createdBy);
+        if (channel) updateChannelStats(db, channel, { comments: 1 });
+      }
       await writeDb(db);
       return sendJson(res, 201, { comment: entry, comments: db.comments[episodeId] });
     }
