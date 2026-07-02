@@ -257,25 +257,25 @@ video {
   scrollbar-width: thin !important;
 }
 
-/* Adjust Browse All section size for tighter card spacing */
+/* Match Browse All spacing exactly with default Trending Now rail */
 .section-heading + .rail.browse-rail {
-  margin-top: 0.9rem !important;
-  gap: 0.9rem !important;
-  padding-top: 0.4rem !important;
-  grid-auto-columns: clamp(130px, 12vw, 190px) !important;
+  margin-top: 1.4rem !important;
+  gap: 1rem !important;
+  padding: 0.25rem 0 0.75rem !important;
+  grid-auto-columns: clamp(150px, 18vw, 230px) !important;
 }
 
 .browse-rail .anime-card {
-  gap: 0.55rem !important;
+  gap: 0.7rem !important;
 }
 
 .browse-rail .anime-card h3 {
-  font-size: 0.92rem !important;
+  font-size: 0.98rem !important;
 }
 
 .browse-rail .anime-card p,
 .browse-rail .anime-card small {
-  font-size: 0.78rem !important;
+  font-size: 0.82rem !important;
 }
 
 .grid,
