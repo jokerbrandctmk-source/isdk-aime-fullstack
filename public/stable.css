@@ -257,6 +257,13 @@ video {
   scrollbar-width: thin !important;
 }
 
+/* Increase spacing for the "Browse All" section specifically */
+.section-heading + .rail.browse-rail {
+  margin-top: 0.9rem !important;
+  gap: 1.25rem !important;
+  padding-top: 0.6rem !important;
+}
+
 .grid,
 .mobile-poster-grid {
   display: grid !important;
