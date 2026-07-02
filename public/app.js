@@ -1613,6 +1613,26 @@ async function toggleAnimeLike(slug) {
   }
 }
 
+async function toggleChannelFollow(slug) {
+  if (!state.user) {
+    toast("Sign in to follow channels.");
+    openAuthModal();
+    return;
+  }
+
+  try {
+    const res = await api.post(`/api/channels/${slug}/subscribe`, {});
+    const channel = state.channels && state.channels.find((c) => c.slug === slug);
+    if (channel) {
+      channel.subscribers = res.subscribers || channel.subscribers || 0;
+    }
+    toast(res.subscribed ? "Subscribed." : "Unsubscribed.");
+    await route();
+  } catch (err) {
+    toast(err.message || "Subscription failed.");
+  }
+}
+
 function shareCurrentPage(title = document.title) {
   const shareUrl = location.href;
   const shareData = {
@@ -4282,6 +4302,12 @@ function bindGlobalEvents() {
     const likeButton = event.target.closest("[data-like]");
     if (likeButton) {
       await toggleAnimeLike(likeButton.dataset.like);
+      return;
+    }
+
+    const followButton = event.target.closest("[data-follow-channel]");
+    if (followButton) {
+      await toggleChannelFollow(followButton.dataset.followChannel);
       return;
     }
 
