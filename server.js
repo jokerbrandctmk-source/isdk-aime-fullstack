@@ -1992,6 +1992,110 @@ if (req.method === "POST" && pathname === "/api/auth/firebase") {
     }
   }
 
+  // ----------------------
+  // Watch History
+  // ----------------------
+  if (req.method === "GET" && pathname === "/api/watchhistory") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const history = db.watchHistory && Array.isArray(db.watchHistory[user.id]) ? db.watchHistory[user.id] : [];
+    return sendJson(res, 200, { history });
+  }
+
+  if (req.method === "POST" && pathname === "/api/watchhistory") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const body = await readJsonBody(req);
+    const animeId = String(body.animeId || "").trim();
+    const episodeId = String(body.episodeId || "").trim();
+    const watchTime = Math.max(0, Number(body.watchTime || 0));
+    const completed = Boolean(body.completed);
+
+    if (!animeId && !episodeId) return sendError(res, 400, "animeId or episodeId required.");
+
+    db.watchHistory ||= {};
+    db.watchHistory[user.id] ||= [];
+    const entry = {
+      id: `wh_${crypto.randomUUID()}`,
+      userId: user.id,
+      animeId: animeId || null,
+      episodeId: episodeId || null,
+      watchTime,
+      completed,
+      createdAt: new Date().toISOString()
+    };
+    db.watchHistory[user.id].unshift(entry);
+
+    // update anime and channel aggregates
+    try {
+      const match = episodeId ? await findEpisodeAny(db, episodeId) : null;
+      const anime = match?.anime || (animeId ? await findAnimeAny(db, animeId) : null);
+      if (anime) {
+        const stats = ensureCloudStats(db, anime.slug, anime);
+        // we don't increment view here automatically; views are increased via /api/anime/:slug/view
+        // but we will update channel watch time if channel exists
+        const channel = (db.channels || []).find((item) => item.userId === anime.createdBy);
+        if (channel && watchTime > 0) updateChannelStats(db, channel, { watchTime });
+      }
+    } catch (e) {
+      // ignore aggregate errors
+    }
+
+    await writeDb(db);
+    return sendJson(res, 201, { entry });
+  }
+
+  // ----------------------
+  // Channel subscribers listing
+  // ----------------------
+  if (req.method === "GET" && parts[0] === "api" && parts[1] === "channels" && parts[2] && parts[3] === "subscribers") {
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    const subs = Array.isArray(db.subscribers[channel.id]) ? db.subscribers[channel.id] : [];
+    const users = (db.users || []).filter((u) => subs.includes(u.id)).map((u) => sanitizeUser(u));
+    return sendJson(res, 200, { subscribers: users, count: users.length });
+  }
+
+  // ----------------------
+  // Revenue endpoints
+  // ----------------------
+  if (req.method === "GET" && pathname === "/api/revenue") {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    // return revenue rows for channels owned by this user
+    const myChannels = (db.channels || []).filter((c) => c.userId === user.id).map((c) => c.id);
+    const rows = (db.revenue || []).filter((r) => myChannels.includes(r.channelId));
+    return sendJson(res, 200, { revenue: rows });
+  }
+
+  if (req.method === "POST" && parts[0] === "api" && parts[1] === "revenue" && parts[2]) {
+    const user = await getCurrentUser(req, db);
+    if (!user) return sendError(res, 401, "Sign in required.");
+    const channel = (db.channels || []).find((item) => item.slug === parts[2]);
+    if (!channel) return sendError(res, 404, "Channel not found.");
+    if (String(channel.userId) !== String(user.id)) return sendError(res, 403, "Only channel owner can add revenue.");
+    const body = await readJsonBody(req);
+    const month = String(body.month || new Date().toISOString().slice(0, 7)).slice(0, 7);
+    const adsRevenue = Number(body.adsRevenue || 0);
+    const membershipRevenue = Number(body.membershipRevenue || 0);
+    const superThanks = Number(body.superThanks || 0);
+    const totalRevenue = adsRevenue + membershipRevenue + superThanks;
+    db.revenue ||= [];
+    const row = {
+      id: `rev_${crypto.randomUUID()}`,
+      channelId: channel.id,
+      month,
+      adsRevenue,
+      membershipRevenue,
+      superThanks,
+      totalRevenue
+    };
+    db.revenue.push(row);
+    updateChannelStats(db, channel, { revenue: totalRevenue });
+    await writeDb(db);
+    return sendJson(res, 201, { revenue: row });
+  }
+
   return sendError(res, 404, "API route not found.");
 }
 
