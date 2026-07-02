@@ -257,11 +257,25 @@ video {
   scrollbar-width: thin !important;
 }
 
-/* Increase spacing for the "Browse All" section specifically */
+/* Adjust Browse All section size for tighter card spacing */
 .section-heading + .rail.browse-rail {
   margin-top: 0.9rem !important;
-  gap: 1.25rem !important;
-  padding-top: 0.6rem !important;
+  gap: 0.9rem !important;
+  padding-top: 0.4rem !important;
+  grid-auto-columns: clamp(130px, 12vw, 190px) !important;
+}
+
+.browse-rail .anime-card {
+  gap: 0.55rem !important;
+}
+
+.browse-rail .anime-card h3 {
+  font-size: 0.92rem !important;
+}
+
+.browse-rail .anime-card p,
+.browse-rail .anime-card small {
+  font-size: 0.78rem !important;
 }
 
 .grid,
