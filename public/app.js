@@ -1711,31 +1711,6 @@ if (!firstEpisode) {
         </div>
         <div class="hero-preview">
           <img class="hero-poster" src="${escapeHtml(posterImage)}" alt="${escapeHtml(anime.title)} poster" fetchpriority="high" decoding="async" />
-          ${
-            firstEpisode.video
-              ? `
-                <video class="trailer-preview" loop autoplay playsinline preload="metadata" poster="${escapeHtml(backdropImage)}">
-                  <source src="${escapeHtml(assetUrl(firstEpisode.video, ""))}" />
-                </video>
-                <form id="commentForm">
-
-  <input
-    id="commentInput"
-    type="text"
-    placeholder="Write comment..."
-  />
-
-  <button type="submit">
-    Send
-  </button>
-
-</form>
-
-<div id="commentsContainer"></div>
-              `
-              : ""
-          }
-          <span class="preview-label">${icon("play")} Trailer preview</span>
         </div>
       </div>
     </section>

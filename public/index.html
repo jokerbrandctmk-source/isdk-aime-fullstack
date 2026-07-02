@@ -92,39 +92,56 @@
 
     <template id="authTemplate">
       <div class="modal-backdrop" data-close-modal>
-        <section class="auth-modal mobile-first" aria-modal="true" role="dialog" aria-labelledby="authTitle">
+        <section class="auth-modal auth-page mobile-first" aria-modal="true" role="dialog" aria-labelledby="authTitle">
           <button class="icon-button modal-close" type="button" data-close-modal aria-label="Close">
             <svg class="icon"><use href="#icon-x"></use></svg>
           </button>
-          <h2 id="authTitle">Welcome to ISKD Anime</h2>
-          <p class="muted">Sign in to save your watchlist, comments, and creator studio.</p>
+          <div class="auth-slideshow" aria-hidden="true">
+            <span style="background-image:linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('/assets/anime/neon-ronin.jpg')"></span>
+            <span style="background-image:linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('/assets/anime/a-demon-king.jpg')"></span>
+            <span style="background-image:linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('/assets/anime/irshad.jpg')"></span>
+          </div>
 
-          <div class="auth-options">
-            <button id="googleSignIn" class="primary-button wide google">Sign in with Google</button>
-            <div class="divider"><span>or</span></div>
-            <form id="phoneForm" class="auth-compact">
-              <label>Phone number
-                <input id="phoneInput" name="phone" placeholder="+91 98765 43210" pattern="^\+?[0-9\s-]{7,20}$" inputmode="tel" />
-              </label>
-              <div id="recaptcha-container"></div>
-              <button id="phoneSendOtp" class="primary-button wide" type="button">Send OTP</button>
-            </form>
+          <div class="auth-card">
+            <header class="screen-header">
+              <div></div>
+              <div style="text-align:center">
+                <img class="auth-logo" src="/assets/logo.svg" alt="ISKD Anime" />
+              </div>
+              <div></div>
+            </header>
 
-            <form id="emailForm" class="auth-compact">
-              <label>Email
-                <input id="emailInput" name="email" placeholder="you@example.com" type="email" />
-              </label>
-              <button id="emailSendLink" class="ghost-button wide" type="button">Send Magic Link (Email OTP)</button>
-            </form>
+            <h2 id="authTitle">Welcome back</h2>
+            <p class="muted">Sign in to save your watchlist, comments, and access your creator studio.</p>
 
-            <form id="otpForm" class="auth-compact" hidden>
-              <label>Enter OTP
-                <input id="otpInput" name="otp" inputmode="numeric" placeholder="123456" />
-              </label>
-              <button id="otpVerify" class="primary-button wide" type="button">Verify OTP</button>
-            </form>
+            <div class="auth-options">
+              <button id="googleSignIn" class="primary-button wide google">Continue with Google</button>
+              <div class="divider"><span>or</span></div>
 
-            <p id="authMessage" class="form-message" role="status"></p>
+              <form id="phoneForm" class="auth-compact">
+                <label>Phone number
+                  <input id="phoneInput" name="phone" placeholder="+91 98765 43210" pattern="^\+?[0-9\s-]{7,20}$" inputmode="tel" />
+                </label>
+                <div id="recaptcha-container"></div>
+                <button id="phoneSendOtp" class="primary-button wide" type="button">Send OTP</button>
+              </form>
+
+              <form id="emailForm" class="auth-compact">
+                <label>Email
+                  <input id="emailInput" name="email" placeholder="you@example.com" type="email" />
+                </label>
+                <button id="emailSendLink" class="ghost-button wide" type="button">Send Magic Link</button>
+              </form>
+
+              <form id="otpForm" class="auth-compact" hidden>
+                <label>Enter OTP
+                  <input id="otpInput" name="otp" inputmode="numeric" placeholder="123456" />
+                </label>
+                <button id="otpVerify" class="primary-button wide" type="button">Verify OTP</button>
+              </form>
+
+              <p id="authMessage" class="form-message" role="status"></p>
+            </div>
           </div>
         </section>
       </div>
