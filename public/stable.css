@@ -798,6 +798,25 @@ body.auth-mode .mobile-tabbar {
     padding: 34dvh 1rem calc(var(--tabbar-h) + 1.1rem) !important;
   }
 
+
+/* Hide trailer preview on smaller screens to match mobile UX requirement */
+@media (max-width: 920px) {
+  .trailer-preview,
+  .preview-label {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* Ensure poster image remains visible and fills area on mobile */
+  .hero-preview img.hero-poster {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+}
   .hero-copy {
     width: 100% !important;
     max-width: 26rem !important;
