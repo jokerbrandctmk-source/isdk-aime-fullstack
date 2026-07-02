@@ -47,7 +47,8 @@
           "duration": 60,
           "synopsis": "Serial murders involving all kinds have happened. All the victims are from a Music School led by a famous pianist. Conan and company have been invited to a opening concert of the Music Hall built by the pianist. The biggest attraction of this concert is the world famous violin called \"Stradivarius\" and a special appearance of a singer who has perfect pitch. (Source: ANN)"
         }
-      ]
+      ],
+      "createdByChannel": "jokerbrandctmk-4e7c"
     },
     {
       "id": "ani_459a0bf7-3f8b-407f-856e-f1ae590e1e29",
@@ -93,7 +94,8 @@
           "duration": 240,
           "synopsis": "Cornered with no way out, the demon Anthon Juan Basilis falls to what should have been his death. Instead, he plummets into the life of the human Van, marking the start of their bond. From playing games to camping under the stars, the two boys spend time together and grow closer. However, when events from the demon's past resurface, Basilis forces Van to make a choice—one that threatens the very c"
         }
-      ]
+      ],
+      "createdByChannel": "jokerbrandctmk-4e7c"
     },
     {
       "id": "ani_ded9296e-6b48-4b50-887e-cd4d59bb5179",
@@ -138,7 +140,8 @@
           "video": "https://www.w3schools.com/html/mov_bbb.mp4",
           "synopsis": "The opening episode introduces the world, cast, and first conflict."
         }
-      ]
+      ],
+      "createdByChannel": "jokerbrandctmk-4e7c"
     },
     {
       "id": "ani_001",
@@ -456,7 +459,116 @@
       ]
     }
   },
-  "channels": [],
+  "channels": [
+    {
+      "id": "ch_9ba7e9a7-d9f3-4e20-89f7-1543c849690b",
+      "userId": "usr_4f54d742-4579-4a59-b1f5-0446fddf4e7c",
+      "slug": "jokerbrandctmk-4e7c",
+      "name": "jokerbrandctmk",
+      "username": "jokerbrandctmk@gmail.com",
+      "profilePicture": "",
+      "banner": "",
+      "about": "New creator on ISKD Anime.",
+      "socialLinks": [],
+      "website": "",
+      "country": "",
+      "joinDate": "2026-07-02T02:38:26.947Z",
+      "creatorBadge": true,
+      "verified": false,
+      "subscribers": 0,
+      "totalViews": 12,
+      "totalWatchTime": 0,
+      "totalRevenue": 0,
+      "totalVideos": 3,
+      "totalLikes": 0,
+      "totalComments": 1,
+      "monetizationStatus": "Pending",
+      "verificationStatus": "Pending",
+      "isActive": true,
+      "createdAt": "2026-07-02T02:38:26.948Z"
+    },
+    {
+      "id": "ch_59b946c8-2b91-4788-b644-4da9e99e2062",
+      "userId": "usr_67954a64-fa0c-4512-9804-7cb15d4f4e42",
+      "slug": "codextest0524-4e42",
+      "name": "codextest0524",
+      "username": "codextest0524",
+      "profilePicture": "",
+      "banner": "",
+      "about": "New creator on ISKD Anime.",
+      "socialLinks": [],
+      "website": "",
+      "country": "",
+      "joinDate": "2026-07-02T02:38:26.948Z",
+      "creatorBadge": true,
+      "verified": false,
+      "subscribers": 0,
+      "totalViews": 0,
+      "totalWatchTime": 0,
+      "totalRevenue": 0,
+      "totalVideos": 0,
+      "totalLikes": 0,
+      "totalComments": 0,
+      "monetizationStatus": "Pending",
+      "verificationStatus": "Pending",
+      "isActive": true,
+      "createdAt": "2026-07-02T02:38:26.948Z"
+    },
+    {
+      "id": "ch_11d9df4f-23be-461f-94d7-f7f23db27070",
+      "userId": "usr_fc098a68-9645-4a18-977d-bf44546b6b46",
+      "slug": "codextest-iskd-app-6b46",
+      "name": "codextest@iskd.app",
+      "username": "codextest@iskd.app",
+      "profilePicture": "",
+      "banner": "",
+      "about": "New creator on ISKD Anime.",
+      "socialLinks": [],
+      "website": "",
+      "country": "",
+      "joinDate": "2026-07-02T02:38:26.948Z",
+      "creatorBadge": true,
+      "verified": false,
+      "subscribers": 0,
+      "totalViews": 0,
+      "totalWatchTime": 0,
+      "totalRevenue": 0,
+      "totalVideos": 0,
+      "totalLikes": 0,
+      "totalComments": 0,
+      "monetizationStatus": "Pending",
+      "verificationStatus": "Pending",
+      "isActive": true,
+      "createdAt": "2026-07-02T02:38:26.948Z"
+    },
+    {
+      "id": "ch_4eda473c-1699-4111-991b-ff0fd204e985",
+      "userId": "usr_289b5b97-c69e-4214-9a44-c7f0e4be37e6",
+      "slug": "irshadkhan0786-gmail-com-37e6",
+      "name": "irshadkhan0786@gmail.com",
+      "username": "irshadkhan0786@gmail.com",
+      "profilePicture": "",
+      "banner": "",
+      "about": "New creator on ISKD Anime.",
+      "socialLinks": [],
+      "website": "",
+      "country": "",
+      "joinDate": "2026-07-02T02:38:26.948Z",
+      "creatorBadge": true,
+      "verified": false,
+      "subscribers": 0,
+      "totalViews": 0,
+      "totalWatchTime": 0,
+      "totalRevenue": 0,
+      "totalVideos": 0,
+      "totalLikes": 0,
+      "totalComments": 0,
+      "monetizationStatus": "Pending",
+      "verificationStatus": "Pending",
+      "isActive": true,
+      "createdAt": "2026-07-02T02:38:26.948Z"
+    }
+  ],
   "subscribers": {},
   "notifications": [],
   "revenue": [],

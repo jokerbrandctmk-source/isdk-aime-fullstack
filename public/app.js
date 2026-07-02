@@ -7,6 +7,9 @@ import {
   auth,
   provider,
   signInWithPopup,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -4019,39 +4022,89 @@ function closeModal() {
 }
 
 function bindAuthModal() {
-  const form = document.querySelector("#authForm");
   const message = document.querySelector("#authMessage");
-  const modeButtons = Array.from(document.querySelectorAll("[data-auth-mode]"));
+  const googleBtn = document.querySelector("#googleSignIn");
+  const phoneInput = document.querySelector("#phoneInput");
+  const phoneSend = document.querySelector("#phoneSendOtp");
+  const otpForm = document.querySelector("#otpForm");
+  const otpInput = document.querySelector("#otpInput");
+  const otpVerify = document.querySelector("#otpVerify");
+  const emailInput = document.querySelector("#emailInput");
+  const emailSend = document.querySelector("#emailSendLink");
 
-  modeButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.authMode === state.authMode);
-    button.addEventListener("click", () => {
-      state.authMode = button.dataset.authMode;
-      bindAuthModal();
-    });
-  });
+  // ensure recaptcha placeholder exists inside modal
+  const rcContainer = document.querySelector("#recaptcha-container");
+  if (rcContainer && !document.querySelector("#firebaseRecaptcha")) {
+    const holder = document.createElement("div");
+    holder.id = "firebaseRecaptcha";
+    holder.style.display = "none";
+    rcContainer.appendChild(holder);
+  }
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    message.textContent = "Working...";
-    const formData = new FormData(form);
-    const email = String(formData.get("username") || "").trim();
-    const password = String(formData.get("password") || "");
-
-    try {
-      if (state.authMode === "register") {
-        await firebaseSignup(email, password);
-      } else {
-        await firebaseLogin(email, password);
+  if (googleBtn) {
+    googleBtn.addEventListener("click", async () => {
+      try {
+        message.textContent = "Signing in with Google...";
+        await googleLogin();
+        closeModal();
+        toast(`Signed in as ${displayNameFromUser()}.`);
+        updateAccountButton();
+        await route();
+      } catch (error) {
+        message.textContent = firebaseErrorMessage(error);
       }
-      closeModal();
-      toast(`Signed in as ${displayNameFromUser()}.`);
-      updateAccountButton();
-      await route();
-    } catch (error) {
-      message.textContent = firebaseErrorMessage(error);
-    }
-  });
+    });
+  }
+
+  if (phoneSend) {
+    phoneSend.addEventListener("click", async () => {
+      try {
+        message.textContent = "Sending OTP...";
+        const phone = String(phoneInput.value || "").trim();
+        await sendFirebasePhoneOtp(phone);
+        message.textContent = `OTP sent to ${normalizePhoneNumber(phone)}.`;
+        if (otpForm) otpForm.hidden = false;
+      } catch (error) {
+        message.textContent = firebaseErrorMessage(error);
+      }
+    });
+  }
+
+  if (otpVerify) {
+    otpVerify.addEventListener("click", async () => {
+      try {
+        message.textContent = "Verifying OTP...";
+        const otp = String(otpInput.value || "").trim();
+        await firebasePhoneLogin(String(phoneInput.value || "").trim(), otp);
+        message.textContent = "Signed in.";
+        closeModal();
+        toast(`Signed in as ${displayNameFromUser()}.`);
+        updateAccountButton();
+        await route();
+      } catch (error) {
+        message.textContent = firebaseErrorMessage(error);
+      }
+    });
+  }
+
+  if (emailSend) {
+    emailSend.addEventListener("click", async () => {
+      try {
+        const email = String(emailInput.value || "").trim();
+        if (!email) {
+          message.textContent = "Enter a valid email.";
+          return;
+        }
+        message.textContent = "Sending magic link...";
+        const actionCodeSettings = { url: window.location.href.replace(/#.*$/, ""), handleCodeInApp: true };
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        localStorage.setItem("isdk_email_for_signin", email);
+        message.textContent = `Magic link sent to ${email}. Check your inbox.`;
+      } catch (error) {
+        message.textContent = firebaseErrorMessage(error);
+      }
+    });
+  }
 }
 
 async function route() {
@@ -4350,6 +4403,29 @@ async function init() {
   app.innerHTML = renderSkeletonShell();
   document.body.classList.add("auth-mode", "booting");
   const firebaseReady = startFirebaseAuthListener();
+
+  // Handle email magic-link sign-in if user clicked the link in their email
+  try {
+    if (isSignInWithEmailLink && isSignInWithEmailLink(auth, window.location.href)) {
+      let emailForSignIn = localStorage.getItem("isdk_email_for_signin") || "";
+      if (!emailForSignIn) {
+        emailForSignIn = window.prompt("Enter the email you used to sign in:") || "";
+      }
+      if (emailForSignIn) {
+        const result = await signInWithEmailLink(auth, emailForSignIn, window.location.href);
+        try {
+          await syncFirebaseSession(result.user);
+          localStorage.removeItem("isdk_email_for_signin");
+          updateAccountButton();
+          toast(`Signed in as ${displayNameFromUser()}.`);
+        } catch (err) {
+          console.warn("Post-email-link sync failed:", err);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Email link sign-in check failed:", err);
+  }
   const genres = await api.get("/api/genres");
   state.genres = asArray(genres.genres);
   await loadAnime();
