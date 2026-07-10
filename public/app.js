@@ -74,6 +74,8 @@ const SUBSCRIBE_KEY = "isdk_aime_subscribed";
 const MONETIZATION_STATUS_KEY = "isdk_aime_monetization_status";
 const SUBSCRIBER_COUNT_KEY = "isdk_aime_subscriber_count";
 const PROFILE_PHOTO_KEY = "isdk_aime_profile_photo";
+const DISLIKE_KEY_PREFIX = "isdk_aime_dislikes_";
+const SETTING_KEY_PREFIX = "isdk_aime_setting_";
 
 const MONETIZATION_REQUIREMENTS = {
   subscribers: 1000,
@@ -257,6 +259,35 @@ function getClientId() {
 
 function userLiked(anime) {
   return Array.isArray(anime?.likedBy) && anime.likedBy.includes(getClientId());
+}
+
+function localDislikeState(slug) {
+  try {
+    return JSON.parse(localStorage.getItem(`${DISLIKE_KEY_PREFIX}${slug}`) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function userDisliked(slug) {
+  return localDislikeState(slug).clientId === getClientId();
+}
+
+function dislikeCount(slug) {
+  return Math.max(0, Number(localDislikeState(slug).count || 0));
+}
+
+function settingValue(key, fallback) {
+  return localStorage.getItem(`${SETTING_KEY_PREFIX}${key}`) || fallback;
+}
+
+function settingEnabled(key, fallback = false) {
+  const value = localStorage.getItem(`${SETTING_KEY_PREFIX}${key}`);
+  return value == null ? fallback : value === "1";
+}
+
+function setSettingValue(key, value) {
+  localStorage.setItem(`${SETTING_KEY_PREFIX}${key}`, String(value));
 }
 
 function isSubscribed() {
@@ -1613,6 +1644,20 @@ async function toggleAnimeLike(slug) {
   }
 }
 
+async function toggleAnimeDislike(slug) {
+  const key = `${DISLIKE_KEY_PREFIX}${slug}`;
+  const current = localDislikeState(slug);
+  const disliked = current.clientId === getClientId();
+  const next = {
+    count: disliked ? Math.max(0, Number(current.count || 0) - 1) : Number(current.count || 0) + 1,
+    clientId: disliked ? "" : getClientId()
+  };
+
+  localStorage.setItem(key, JSON.stringify(next));
+  toast(disliked ? "Dislike removed." : "Feedback saved.");
+  await route();
+}
+
 async function toggleChannelFollow(slug) {
   if (!state.user) {
     toast("Sign in to follow channels.");
@@ -1652,6 +1697,53 @@ function shareCurrentPage(title = document.title) {
     ?.writeText(`${shareData.title}\n${shareData.url}`)
     .then(() => toast("Share link copied."))
     .catch(() => toast("Share link could not be copied."));
+}
+
+function shareWatchPage(anime, episode) {
+  const url = `${location.origin}${location.pathname}#watch/${anime.slug}/${episode.id}`;
+  const title = `${anime.title} - ${episode.title}`;
+  const shareData = {
+    title,
+    text: `Watch ${title} on ISKD Anime.`,
+    url
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch(() => {});
+    return;
+  }
+
+  navigator.clipboard
+    ?.writeText(`${shareData.title}\n${shareData.url}`)
+    .then(() => toast("Share link copied."))
+    .catch(() => toast("Share link ready."));
+}
+
+function renderWatchActionStrip(anime, episode) {
+  const liked = userLiked(anime);
+  const disliked = userDisliked(anime.slug);
+  return `
+    <div class="watch-action-strip" aria-label="Video actions">
+      <div class="like-dislike-pill">
+        <button class="yt-action ${liked ? "active" : ""}" type="button" data-like="${anime.slug}" aria-label="${liked ? "Unlike" : "Like"}">
+          ${icon("thumb-up")} <span>${anime.likes || 0}</span>
+        </button>
+        <span class="yt-divider" aria-hidden="true"></span>
+        <button class="yt-action ${disliked ? "active" : ""}" type="button" data-dislike="${anime.slug}" aria-label="Dislike">
+          ${icon("thumb-down")} <span>${dislikeCount(anime.slug) || ""}</span>
+        </button>
+      </div>
+      <button class="yt-action-pill" type="button" data-share-watch="${anime.slug}" data-share-episode="${episode.id}">
+        ${icon("share")} <span>Share</span>
+      </button>
+      <button class="yt-action-pill" type="button" data-ask-video>
+        ${icon("sparkles")} <span>Ask</span>
+      </button>
+      <button class="yt-action-pill icon-only" type="button" data-more-video="${anime.slug}" aria-label="More options">
+        ${icon("more")}
+      </button>
+    </div>
+  `;
 }
 
 function renderHero(anime) {
@@ -2123,6 +2215,12 @@ function renderAccountPage() {
   const user = state.user || currentLocalUser();
   const name = user ? displayNameFromUser() : "Not logged in";
   const email = user?.email || (user?.username?.includes("@") ? user.username : `${String(user?.username || "guest").toLowerCase()}@iskd.app`);
+  const pinOn = settingEnabled("profile_pin", false);
+  const captionsOn = settingEnabled("closed_captions", true);
+  const cellularOn = settingEnabled("cellular_stream", true);
+  const audioLanguage = settingValue("audio_language", "Hindi / English");
+  const subtitleLanguage = settingValue("subtitle_language", "English");
+  const restrictions = settingValue("content_restrictions", "U/A 16+");
   app.innerHTML = `
     <section class="mobile-page account-page">
       <div class="mobile-page-head">
@@ -2136,17 +2234,17 @@ function renderAccountPage() {
       </div>
       <div class="settings-list">
         <a href="#profiles"><span>Switch Profile</span><b>›</b></a>
-        <button type="button" data-toggle-demo><span>Profile Pin</span><i></i></button>
+        <button type="button" class="${pinOn ? "on" : ""}" data-setting-toggle="profile_pin" data-setting-label="Profile Pin"><span>Profile Pin</span><i></i></button>
         <p>My Profile's Viewing Preferences</p>
-        <a href="#premium"><span>Content Restrictions</span><small>U/A 16+</small><b>›</b></a>
-        <a href="#account"><span>Audio Language</span><b>›</b></a>
-        <a href="#account"><span>Subtitles/CC Language</span><small>English</small><b>›</b></a>
-        <button type="button" data-toggle-demo class="on"><span>Closed Captions</span><i></i></button>
+        <button type="button" data-setting-cycle="content_restrictions" data-setting-values="U/A 13+|U/A 16+|U/A 18+"><span>Content Restrictions</span><small>${escapeHtml(restrictions)}</small><b>&rsaquo;</b></button>
+        <button type="button" data-setting-cycle="audio_language" data-setting-values="Hindi / English|Japanese / Sub|English Dub"><span>Audio Language</span><small>${escapeHtml(audioLanguage)}</small><b>&rsaquo;</b></button>
+        <button type="button" data-setting-cycle="subtitle_language" data-setting-values="English|Hindi|Off"><span>Subtitles/CC Language</span><small>${escapeHtml(subtitleLanguage)}</small><b>&rsaquo;</b></button>
+        <button type="button" class="${captionsOn ? "on" : ""}" data-setting-toggle="closed_captions" data-setting-label="Closed Captions"><span>Closed Captions</span><i></i></button>
         <p>Membership</p>
         <a href="#premium"><span>Subscription</span><small>${isSubscribed() ? "Premium" : "Free"}</small><b>›</b></a>
-        <a href="#account"><span>Email</span><small>${escapeHtml(email)}</small><b>›</b></a>
-        <a href="#account"><span>Stream Using Cellular</span><i class="on"></i></a>
-        <a href="#account"><span>Need Help?</span><b>›</b></a>
+        <button type="button" data-account-email><span>Email</span><small>${escapeHtml(email)}</small><b>&rsaquo;</b></button>
+        <button type="button" class="${cellularOn ? "on" : ""}" data-setting-toggle="cellular_stream" data-setting-label="Stream Using Cellular"><span>Stream Using Cellular</span><i></i></button>
+        <button type="button" data-help-action><span>Need Help?</span><b>&rsaquo;</b></button>
         ${user ? '<button type="button" data-logout-account><span>Log Out</span></button>' : '<a href="#login"><span>Log In</span><b>›</b></a>'}
       </div>
     </section>
@@ -3433,12 +3531,7 @@ async function renderWatch(slug, episodeId) {
           <p class="eyebrow">${anime.title} / Episode ${episode.number}</p>
           <h1>${escapeHtml(episode.title)}</h1>
           <div class="meta-row">${renderMeta(anime)}</div>
-          <div class="action-row">
-            <button class="ghost-button" type="button" data-like="${anime.slug}">
-              ${userLiked(anime) ? "Unlike" : "Like"} (${anime.likes || 0})
-            </button>
-            <button class="ghost-button" type="button" data-share="${anime.slug}">Share</button>
-          </div>
+          ${renderWatchActionStrip(anime, episode)}
           <p class="muted">${escapeHtml(episode.synopsis)}</p>
         </div>
         <section class="comment-panel">
@@ -4259,6 +4352,42 @@ function bindGlobalEvents() {
       return;
     }
 
+    const settingToggle = event.target.closest("[data-setting-toggle]");
+    if (settingToggle) {
+      const key = settingToggle.dataset.settingToggle;
+      const label = settingToggle.dataset.settingLabel || "Setting";
+      const next = !settingEnabled(key, settingToggle.classList.contains("on"));
+      setSettingValue(key, next ? "1" : "0");
+      settingToggle.classList.toggle("on", next);
+      toast(`${label} ${next ? "enabled" : "disabled"}.`);
+      return;
+    }
+
+    const settingCycle = event.target.closest("[data-setting-cycle]");
+    if (settingCycle) {
+      const key = settingCycle.dataset.settingCycle;
+      const values = String(settingCycle.dataset.settingValues || "").split("|").filter(Boolean);
+      if (values.length) {
+        const current = settingValue(key, values[0]);
+        const next = values[(Math.max(0, values.indexOf(current)) + 1) % values.length];
+        setSettingValue(key, next);
+        toast(`${settingCycle.querySelector("span")?.textContent || "Setting"}: ${next}`);
+        renderAccountPage();
+      }
+      return;
+    }
+
+    if (event.target.closest("[data-account-email]")) {
+      const user = state.user || currentLocalUser();
+      toast(user?.email || user?.username || "Email not connected yet.");
+      return;
+    }
+
+    if (event.target.closest("[data-help-action]")) {
+      toast("Help ready: upload, playback, account aur subscription support yahin connect hoga.");
+      return;
+    }
+
     const toggleDemo = event.target.closest("[data-toggle-demo]");
     if (toggleDemo) {
       toggleDemo.classList.toggle("on");
@@ -4280,6 +4409,12 @@ function bindGlobalEvents() {
       return;
     }
 
+    const dislikeButton = event.target.closest("[data-dislike]");
+    if (dislikeButton) {
+      await toggleAnimeDislike(dislikeButton.dataset.dislike);
+      return;
+    }
+
     const followButton = event.target.closest("[data-follow-channel]");
     if (followButton) {
       await toggleChannelFollow(followButton.dataset.followChannel);
@@ -4289,6 +4424,36 @@ function bindGlobalEvents() {
     const shareButton = event.target.closest("[data-share]");
     if (shareButton) {
       shareCurrentPage(document.title);
+      return;
+    }
+
+    const shareWatchButton = event.target.closest("[data-share-watch]");
+    if (shareWatchButton) {
+      const anime = state.anime.find((item) => item.slug === shareWatchButton.dataset.shareWatch);
+      const episode = anime?.episodes?.find((item) => item.id === shareWatchButton.dataset.shareEpisode) || anime?.episodes?.[0];
+      if (anime && episode) {
+        shareWatchPage(anime, episode);
+      } else {
+        shareCurrentPage(document.title);
+      }
+      return;
+    }
+
+    if (event.target.closest("[data-ask-video]")) {
+      const textarea = document.querySelector("#commentForm textarea");
+      if (textarea) {
+        textarea.focus();
+        textarea.placeholder = "Ask or comment about this episode...";
+        toast("Ask box ready.");
+      } else {
+        openAuthModal();
+      }
+      return;
+    }
+
+    const moreVideoButton = event.target.closest("[data-more-video]");
+    if (moreVideoButton) {
+      location.hash = `#details/${moreVideoButton.dataset.moreVideo}`;
       return;
     }
 
